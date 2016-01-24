@@ -1,0 +1,2 @@
+defmodule Thrash do
+end

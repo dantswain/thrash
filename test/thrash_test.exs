@@ -5,8 +5,12 @@ defmodule ThrashTest do
   defmodule SimpleStruct do
     defstruct id: nil, name: nil
 
+    require Thrash.BinaryAcceleratedProtocol
+    Thrash.BinaryAcceleratedProtocol.generate_deserializer(id: :i32, name: :string)
+
     def deserialize(str, :binary_accelerated_protocol) do
-      <<8, 0, 1, id :: 32-signed, 11, 0, 2, name_size :: 32-unsigned, name :: size(name_size)-binary, 0>> = str
+      {id, rest} = deserialize_id(str)
+      {name, rest} = deserialize_name(rest)
 
       %SimpleStruct{id: id, name: name}
     end

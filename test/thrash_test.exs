@@ -8,13 +8,6 @@ defmodule ThrashTest do
     require Thrash.BinaryAcceleratedProtocol
     Thrash.BinaryAcceleratedProtocol.generate_deserializer(id: :i32, name: :string)
 
-    def deserialize(str, :binary_accelerated_protocol) do
-      {id, rest} = deserialize_id(str)
-      {name, rest} = deserialize_name(rest)
-
-      %SimpleStruct{id: id, name: name}
-    end
-
     def serialize(struct, :binary_accelerated_protocol) do
       <<8, 0, 1, struct.id :: 32-signed, 11, 0, 2, byte_size(struct.name) :: 32-unsigned, struct.name :: binary, 0>>
     end
@@ -23,7 +16,7 @@ defmodule ThrashTest do
   test "deserializes a struct" do
     str = "\b\x00\x01\x00\x00\x00*\v\x00\x02\x00\x00\x00\bmy thing\x00"
     expected = %ThrashTest.SimpleStruct{id: 42, name: "my thing"}
-    deserialized = ThrashTest.SimpleStruct.deserialize(str, :binary_accelerated_protocol)
+    deserialized = ThrashTest.SimpleStruct.deserialize(str)
     assert(deserialized == expected)
   end
 

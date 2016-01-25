@@ -10,8 +10,21 @@ defmodule Thrash do
   defmodule BinaryAcceleratedProtocol do
     require Thrash.Type
 
-    def deserializer_name(field) do
-      String.to_atom("deserialize_" <> Atom.to_string(field))
+    defmacro generate_serializer(thrift_def) do
+      [quote do
+         def serialize(val) do
+           serialize_field(0, val, <<>>)
+         end
+      end] ++ generate_field_serializers(thrift_def)
+    end
+
+    def generate_field_serializers(thrift_def) do
+      Enum.with_index(thrift_def ++ [final: nil])
+      |> Enum.map(fn({{k, v}, ix}) ->
+        type = v
+        varname = k
+        serializer(type, varname, ix)
+      end)
     end
 
     defmacro generate_deserializer(thrift_def) do
@@ -52,6 +65,29 @@ defmodule Thrash do
     def deserializer(nil, :final, ix) do
       quote do
         def deserialize_field(unquote(ix), _, acc), do: acc
+      end
+    end
+
+    def serializer(:i32, fieldname, ix) do
+      quote do
+        def serialize_field(unquote(ix), val, acc) do
+          serialize_field(unquote(ix) + 1, val,
+          acc <> << unquote(Type.id(:i32)), unquote(ix) + 1 :: 16-unsigned, (Map.get(val, unquote(fieldname))) :: 32-signed >>)
+        end
+      end
+    end
+    def serializer(:string, fieldname, ix) do
+      quote do
+        def serialize_field(unquote(ix), val, acc) do
+          str = Map.get(val, unquote(fieldname))
+          serialize_field(unquote(ix) + 1, val,
+          acc <> << unquote(Type.id(:string)), unquote(ix) + 1 :: 16-unsigned, byte_size(str) :: 32-unsigned, str :: binary, 0 >>)
+        end
+      end
+    end
+    def serializer(nil, :final, ix) do
+      quote do
+        def serialize_field(unquote(ix), _, acc), do: acc
       end
     end
   end

@@ -8,6 +8,7 @@ defmodule Thrash.Mixfile do
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      erlc_options: [:bin_opt_info],
+     elixirc_paths: elixirc_paths(Mix.env),
      deps: deps]
   end
 
@@ -17,6 +18,9 @@ defmodule Thrash.Mixfile do
   def application do
     [applications: [:logger]]
   end
+
+  def elixirc_paths(:dev), do: ["lib", "bench"]
+  def elixirc_paths(_), do: ["lib"]
 
   # Dependencies can be Hex packages:
   #
@@ -28,6 +32,7 @@ defmodule Thrash.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    []
+    [{:thrift_ex, github: "dantswain/thrift_ex", only: :dev},
+     {:benchwarmer, "~>0.0.2", only: :dev}]
   end
 end

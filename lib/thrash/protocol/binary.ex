@@ -1,6 +1,18 @@
 defmodule Thrash.Protocol.Binary do
   alias Thrash.Type
 
+  def deserialize_list(_, 0, {acc, str}) do
+    {acc, str}
+  end
+  def deserialize_list(:i32, len, {acc, str}) do
+    << value :: 32-signed, rest :: binary >> = str
+    deserialize_list(:i32, len - 1, {[value | acc], rest})
+  end
+
+  def serialize_list(:i32, list) do
+    (for el <- list, do: << el :: 32-signed >>) |> Enum.join
+  end
+
   defmacro generate_serializer(thrift_def) do
     [quote do
        def serialize(val) do
@@ -47,9 +59,19 @@ defmodule Thrash.Protocol.Binary do
   def deserializer(:string, fieldname, ix) do
     quote do
       def deserialize_field(unquote(ix),
-                            << unquote(Type.id(:string)), unquote(ix + 1) :: 16-unsigned, len :: 32-unsigned, value :: size(len)-binary, 0, rest :: binary>>,
+                            << unquote(Type.id(:string)), unquote(ix + 1) :: 16-unsigned, len :: 32-unsigned, value :: size(len)-binary, rest :: binary>>,
                             acc) do
         deserialize_field(unquote(ix) + 1, rest, Map.put(acc, unquote(fieldname), value))
+      end
+    end
+  end
+  def deserializer({:list, of_type}, fieldname, ix) do
+    quote do
+      def deserialize_field(unquote(ix),
+                            << unquote(Type.id(:list)), unquote(ix + 1) :: 16-unsigned, unquote(Type.id(of_type)), len :: 32-unsigned, rest :: binary >>,
+                            acc) do
+        {list, rest} = Thrash.Protocol.Binary.deserialize_list(unquote(of_type), len, {[], rest})
+        deserialize_field(unquote(ix) + 1, rest, Map.put(acc, unquote(fieldname), Enum.reverse(list)))
       end
     end
   end
@@ -72,13 +94,23 @@ defmodule Thrash.Protocol.Binary do
       def serialize_field(unquote(ix), val, acc) do
         str = Map.get(val, unquote(fieldname))
         serialize_field(unquote(ix) + 1, val,
-                        acc <> << unquote(Type.id(:string)), unquote(ix) + 1 :: 16-unsigned, byte_size(str) :: 32-unsigned, str :: binary, 0 >>)
+                        acc <> << unquote(Type.id(:string)), unquote(ix) + 1 :: 16-unsigned, byte_size(str) :: 32-unsigned, str :: binary >>)
+      end
+    end
+  end
+  def serializer({:list, of_type}, fieldname, ix) do
+    quote do
+      def serialize_field(unquote(ix), val, acc) do
+        list = Map.get(val, unquote(fieldname))
+        header = << unquote(Type.id(:list)), unquote(ix) + 1 :: 16-unsigned, unquote(Type.id(of_type)), length(list) :: 32-unsigned >>
+        serialized = Thrash.Protocol.Binary.serialize_list(unquote(of_type), list)
+        serialize_field(unquote(ix) + 1, val, acc <> header <> serialized)
       end
     end
   end
   def serializer(nil, :final, ix) do
     quote do
-      def serialize_field(unquote(ix), _, acc), do: acc
+      def serialize_field(unquote(ix), _, acc), do: acc <> << 0 >>
     end
   end
 end

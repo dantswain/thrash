@@ -74,6 +74,16 @@ defmodule Thrash.Protocol.Binary do
       end
     end
   end
+  def deserializer({:struct, struct_module}, fieldname, ix) do
+    quote do
+      def deserialize_field(unquote(ix),
+                            << unquote(Type.id(:struct)), unquote(ix + 1) :: 16-unsigned, rest :: binary >>,
+                            acc) do
+        {sub_struct, rest} = unquote(struct_module).deserialize(rest)
+        deserialize_field(unquote(ix) + 1, rest, Map.put(acc, unquote(fieldname), sub_struct))
+      end
+    end
+  end
   def deserializer({:list, of_type}, fieldname, ix) do
     quote do
       def deserialize_field(unquote(ix),
@@ -86,7 +96,7 @@ defmodule Thrash.Protocol.Binary do
   end
   def deserializer(nil, :final, ix) do
     quote do
-      def deserialize_field(unquote(ix), _, acc), do: acc
+      def deserialize_field(unquote(ix), << 0, remainder :: binary >>, acc), do: {acc, remainder}
     end
   end
 
@@ -112,6 +122,16 @@ defmodule Thrash.Protocol.Binary do
         str = Map.get(val, unquote(fieldname))
         serialize_field(unquote(ix) + 1, val,
                         acc <> << unquote(Type.id(:string)), unquote(ix) + 1 :: 16-unsigned, byte_size(str) :: 32-unsigned, str :: binary >>)
+      end
+    end
+  end
+  def serializer({:struct, struct_module}, fieldname, ix) do
+    quote do
+      def serialize_field(unquote(ix), val, acc) do
+        sub_str = Map.get(val, unquote(fieldname))
+        header = << unquote(Type.id(:struct)), unquote(ix) + 1 :: 16-unsigned >>
+        serialized = unquote(struct_module).serialize(sub_str)
+        serialize_field(unquote(ix) + 1, val, acc <> header <> serialized)
       end
     end
   end

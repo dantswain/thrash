@@ -81,6 +81,16 @@ defmodule Thrash.Protocol.Binary do
       end
     end
   end
+  def deserializer({:enum, enum_module}, fieldname, ix) do
+    quote do
+      def deserialize_field(unquote(ix),
+                            << unquote(Type.id(:enum)), unquote(ix + 1) :: 16-unsigned, value :: 32-signed, rest :: binary >>,
+                            acc) do
+        value = unquote(enum_module).atom(value)
+        deserialize_field(unquote(ix) + 1, rest, Map.put(acc, unquote(fieldname), value))
+      end
+    end
+  end
   def deserializer(:i64, fieldname, ix) do
     quote do
       def deserialize_field(unquote(ix),
@@ -149,6 +159,15 @@ defmodule Thrash.Protocol.Binary do
       def serialize_field(unquote(ix), val, acc) do
         serialize_field(unquote(ix) + 1, val,
                         acc <> << unquote(Type.id(:i32)), unquote(ix) + 1 :: 16-unsigned, (Map.get(val, unquote(fieldname))) :: 32-signed >>)
+      end
+    end
+  end
+  def serializer({:enum, enum_module}, fieldname, ix) do
+    quote do
+      def serialize_field(unquote(ix), val, acc) do
+        value = unquote(enum_module).id(Map.get(val, unquote(fieldname)))
+        serialize_field(unquote(ix) + 1, val,
+                        acc <> << unquote(Type.id(:enum)), unquote(ix) + 1 :: 16-unsigned, value :: 32-unsigned >>)
       end
     end
   end

@@ -12,4 +12,5 @@ struct SimpleStruct {
   4: i64 bigint
   5: SubStruct sub_struct
   6: bool flag
+  7: double floatval
 }

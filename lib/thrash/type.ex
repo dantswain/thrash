@@ -1,5 +1,6 @@
 defmodule Thrash.Type do
   def id(:bool), do: 2
+  def id(:double), do: 4
   def id(:i32), do: 8
   def id(:i64), do: 10
   def id(:string), do: 11

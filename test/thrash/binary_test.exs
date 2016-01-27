@@ -23,7 +23,8 @@ defmodule Thrash.BinaryTest do
               list_of_ints: [],
               bigint: nil,
               sub_struct: %TestSubStruct{},
-              flag: false)
+              flag: false,
+              floatval: nil)
 
     require Thrash.Protocol.Binary
     Thrash.Protocol.Binary.generate_deserializer(id: :i32,
@@ -31,18 +32,18 @@ defmodule Thrash.BinaryTest do
                                                  list_of_ints: {:list, :i32},
                                                  bigint: :i64,
                                                  sub_struct: {:struct, TestSubStruct},
-                                                 flag: :bool)
+                                                 flag: :bool,
+                                                 floatval: :double)
     Thrash.Protocol.Binary.generate_serializer(id: :i32,
                                                name: :string,
                                                list_of_ints: {:list, :i32},
                                                bigint: :i64,
                                                sub_struct: {:struct, TestSubStruct},
-                                               flag: :bool)
+                                               flag: :bool,
+                                               floatval: :double)
 
     def test_str do
-      hex = "0800010000002A0B0002000000086D79207468696E670F00030800000006" <>
-        "00000004000000080000000F00000010000000170000002A0A0004FFFFF6E7B18D6" <>
-        "0010C00050800010000004D0B00020000000C612073756220737472756374000200060100"
+      hex = "0800010000002A0B0002000000086D79207468696E670F0003080000000600000004000000080000000F00000010000000170000002A0A0004FFFFF6E7B18D60010C00050800010000004D0B00020000000C6120737562207374727563740002000601040007400921FB53C8D4F100"
       Base.decode16!(hex)
     end
 
@@ -53,7 +54,8 @@ defmodule Thrash.BinaryTest do
                   list_of_ints: [4, 8, 15, 16, 23, 42],
                   bigint: -9999999999999,
                   sub_struct: sub_struct,
-                  flag: true}
+                  flag: true,
+                  floatval: 3.14159265}
     end
   end
 

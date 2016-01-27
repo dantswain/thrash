@@ -63,6 +63,15 @@ defmodule Thrash.Protocol.Binary do
       end
     end
   end
+  def deserializer(:double, fieldname, ix) do
+    quote do
+      def deserialize_field(unquote(ix),
+                            << unquote(Type.id(:double)), unquote(ix + 1) :: 16-unsigned, value :: signed-float, rest :: binary >>,
+                            acc) do
+        deserialize_field(unquote(ix) + 1, rest, Map.put(acc, unquote(fieldname), value))
+      end
+    end
+  end
   def deserializer(:i32, fieldname, ix) do
     quote do
       def deserialize_field(unquote(ix),
@@ -123,6 +132,15 @@ defmodule Thrash.Protocol.Binary do
         serialize_field(unquote(ix) + 1,
                         val,
                         acc <> << unquote(Type.id(:bool)), unquote(ix) + 1 :: 16-unsigned, value :: 8-unsigned >>)
+      end
+    end
+  end
+  def serializer(:double, fieldname, ix) do
+    quote do
+      def serialize_field(unquote(ix), val, acc) do
+        value = Map.get(val, unquote(fieldname))
+        serialize_field(unquote(ix) + 1, val,
+                        acc <> << unquote(Type.id(:double)), unquote(ix) + 1 :: 16-unsigned, value :: signed-float >>)
       end
     end
   end

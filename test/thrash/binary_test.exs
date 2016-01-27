@@ -18,24 +18,31 @@ defmodule Thrash.BinaryTest do
   end
 
   defmodule TestStruct do
-    defstruct id: nil, name: nil, list_of_ints: [], bigint: nil, sub_struct: %TestSubStruct{}
+    defstruct(id: nil,
+              name: nil,
+              list_of_ints: [],
+              bigint: nil,
+              sub_struct: %TestSubStruct{},
+              flag: false)
 
     require Thrash.Protocol.Binary
     Thrash.Protocol.Binary.generate_deserializer(id: :i32,
                                                  name: :string,
                                                  list_of_ints: {:list, :i32},
                                                  bigint: :i64,
-                                                 sub_struct: {:struct, TestSubStruct})
+                                                 sub_struct: {:struct, TestSubStruct},
+                                                 flag: :bool)
     Thrash.Protocol.Binary.generate_serializer(id: :i32,
                                                name: :string,
                                                list_of_ints: {:list, :i32},
                                                bigint: :i64,
-                                               sub_struct: {:struct, TestSubStruct})
+                                               sub_struct: {:struct, TestSubStruct},
+                                               flag: :bool)
 
     def test_str do
       hex = "0800010000002A0B0002000000086D79207468696E670F00030800000006" <>
         "00000004000000080000000F00000010000000170000002A0A0004FFFFF6E7B18D6" <>
-        "0010C00050800010000004D0B00020000000C6120737562207374727563740000"
+        "0010C00050800010000004D0B00020000000C612073756220737472756374000200060100"
       Base.decode16!(hex)
     end
 
@@ -45,7 +52,8 @@ defmodule Thrash.BinaryTest do
                   name: "my thing",
                   list_of_ints: [4, 8, 15, 16, 23, 42],
                   bigint: -9999999999999,
-                  sub_struct: sub_struct}
+                  sub_struct: sub_struct,
+                  flag: true}
     end
   end
 

@@ -1,6 +1,12 @@
 defmodule Thrash.Protocol.Binary do
   alias Thrash.Type
 
+  def bool_to_byte(true), do: 1
+  def bool_to_byte(false), do: 0
+
+  def byte_to_bool(1), do: true
+  def byte_to_bool(0), do: false
+
   def deserialize_list(_, 0, {acc, str}) do
     {acc, str}
   end
@@ -47,6 +53,16 @@ defmodule Thrash.Protocol.Binary do
     end)
   end
 
+  def deserializer(:bool, fieldname, ix) do
+    quote do
+      def deserialize_field(unquote(ix),
+                            <<unquote(Type.id(:bool)), unquote(ix + 1) :: 16-unsigned, value :: 8-unsigned, rest :: binary >>,
+                            acc) do
+        value = Thrash.Protocol.Binary.byte_to_bool(value)
+        deserialize_field(unquote(ix) + 1, rest, Map.put(acc, unquote(fieldname), value))
+      end
+    end
+  end
   def deserializer(:i32, fieldname, ix) do
     quote do
       def deserialize_field(unquote(ix),
@@ -100,6 +116,16 @@ defmodule Thrash.Protocol.Binary do
     end
   end
 
+  def serializer(:bool, fieldname, ix) do
+    quote do
+      def serialize_field(unquote(ix), val, acc) do
+        value = Thrash.Protocol.Binary.bool_to_byte(Map.get(val, unquote(fieldname)))
+        serialize_field(unquote(ix) + 1,
+                        val,
+                        acc <> << unquote(Type.id(:bool)), unquote(ix) + 1 :: 16-unsigned, value :: 8-unsigned >>)
+      end
+    end
+  end
   def serializer(:i32, fieldname, ix) do
     quote do
       def serialize_field(unquote(ix), val, acc) do

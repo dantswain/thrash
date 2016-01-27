@@ -11,4 +11,5 @@ struct SimpleStruct {
   3: list<i32> list_of_ints
   4: i64 bigint
   5: SubStruct sub_struct
+  6: bool flag
 }

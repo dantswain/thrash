@@ -26,12 +26,23 @@ defmodule Thrash.Protocol.Binary do
     Enum.map(list, fn(el) -> struct_module.serialize(el) end) |> Enum.join
   end
 
+  def generate_serialize() do
+    quote do
+      def serialize(val) do
+        serialize_field(0, val, <<>>)
+      end
+    end
+  end
+
+  defmacro generate(thrift_def) do
+    [generate_serialize()] ++
+      generate_field_serializers(thrift_def) ++
+      [generate_deserialize()] ++
+      generate_field_deserializers(thrift_def)
+  end
+
   defmacro generate_serializer(thrift_def) do
-    [quote do
-       def serialize(val) do
-         serialize_field(0, val, <<>>)
-       end
-    end] ++ generate_field_serializers(thrift_def)
+    [generate_serialize()] ++ generate_field_serializers(thrift_def)
   end
 
   def generate_field_serializers(thrift_def) do
@@ -43,12 +54,16 @@ defmodule Thrash.Protocol.Binary do
     end)
   end
 
+  def generate_deserialize() do
+    quote do
+      def deserialize(str, template \\ __struct__) do
+        deserialize_field(0, str, template)
+      end
+    end
+  end
+
   defmacro generate_deserializer(thrift_def) do
-    [quote do
-       def deserialize(str, template \\ __struct__) do
-         deserialize_field(0, str, template)
-       end
-    end] ++ generate_field_deserializers(thrift_def)
+    [generate_deserialize()] ++ generate_field_deserializers(thrift_def)
   end
 
   def generate_field_deserializers(thrift_def) do

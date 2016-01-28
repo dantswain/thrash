@@ -41,24 +41,15 @@ defmodule Thrash.BinaryTest do
               list_of_structs: [])
 
     require Thrash.Protocol.Binary
-    Thrash.Protocol.Binary.generate_deserializer(id: :i32,
-                                                 name: :string,
-                                                 list_of_ints: {:list, :i32},
-                                                 bigint: :i64,
-                                                 sub_struct: {:struct, TestSubStruct},
-                                                 flag: :bool,
-                                                 floatval: :double,
-                                                 taco_pref: {:enum, TacoType},
-                                                 list_of_structs: {:list, TestSubStruct})
-    Thrash.Protocol.Binary.generate_serializer(id: :i32,
-                                               name: :string,
-                                               list_of_ints: {:list, :i32},
-                                               bigint: :i64,
-                                               sub_struct: {:struct, TestSubStruct},
-                                               flag: :bool,
-                                               floatval: :double,
-                                               taco_pref: {:enum, TacoType},
-                                               list_of_structs: {:list, TestSubStruct})
+    Thrash.Protocol.Binary.generate(id: :i32,
+                                    name: :string,
+                                    list_of_ints: {:list, :i32},
+                                    bigint: :i64,
+                                    sub_struct: {:struct, TestSubStruct},
+                                    flag: :bool,
+                                    floatval: :double,
+                                    taco_pref: {:enum, TacoType},
+                                    list_of_structs: {:list, TestSubStruct})
 
     def test_str do
       hex = "0800010000002A0B0002000000086D79207468696E670F0003080000000600000004000000080000000F00000010000000170000002A0A0004FFFFF6E7B18D60010C00050800010000004D0B00020000000C6120737562207374727563740002000601040007400921FB53C8D4F10800080000007C0F00090C00000005080001000000010B00020000000B737562207468696E67203100080001000000020B00020000000B737562207468696E67203200080001000000030B00020000000B737562207468696E67203300080001000000040B00020000000B737562207468696E67203400080001000000050B00020000000B737562207468696E6720350000"

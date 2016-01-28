@@ -22,4 +22,5 @@ struct SimpleStruct {
   6: bool flag
   7: double floatval
   8: TacoType taco_pref
+  9: list<SubStruct> list_of_structs
 }

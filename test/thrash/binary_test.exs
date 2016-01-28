@@ -37,7 +37,8 @@ defmodule Thrash.BinaryTest do
               sub_struct: %TestSubStruct{},
               flag: false,
               floatval: nil,
-              taco_pref: :chicken)
+              taco_pref: :chicken,
+              list_of_structs: [])
 
     require Thrash.Protocol.Binary
     Thrash.Protocol.Binary.generate_deserializer(id: :i32,
@@ -47,7 +48,8 @@ defmodule Thrash.BinaryTest do
                                                  sub_struct: {:struct, TestSubStruct},
                                                  flag: :bool,
                                                  floatval: :double,
-                                                 taco_pref: {:enum, TacoType})
+                                                 taco_pref: {:enum, TacoType},
+                                                 list_of_structs: {:list, TestSubStruct})
     Thrash.Protocol.Binary.generate_serializer(id: :i32,
                                                name: :string,
                                                list_of_ints: {:list, :i32},
@@ -55,15 +57,19 @@ defmodule Thrash.BinaryTest do
                                                sub_struct: {:struct, TestSubStruct},
                                                flag: :bool,
                                                floatval: :double,
-                                               taco_pref: {:enum, TacoType})
+                                               taco_pref: {:enum, TacoType},
+                                               list_of_structs: {:list, TestSubStruct})
 
     def test_str do
-      hex = "0800010000002A0B0002000000086D79207468696E670F0003080000000600000004000000080000000F00000010000000170000002A0A0004FFFFF6E7B18D60010C00050800010000004D0B00020000000C6120737562207374727563740002000601040007400921FB53C8D4F10800080000007C00"
+      hex = "0800010000002A0B0002000000086D79207468696E670F0003080000000600000004000000080000000F00000010000000170000002A0A0004FFFFF6E7B18D60010C00050800010000004D0B00020000000C6120737562207374727563740002000601040007400921FB53C8D4F10800080000007C0F00090C00000005080001000000010B00020000000B737562207468696E67203100080001000000020B00020000000B737562207468696E67203200080001000000030B00020000000B737562207468696E67203300080001000000040B00020000000B737562207468696E67203400080001000000050B00020000000B737562207468696E6720350000"
       Base.decode16!(hex)
     end
 
     def test_struct do
       sub_struct = %TestSubStruct{sub_id: 77, sub_name: "a sub struct"}
+      list_of_sub_structs = (1..5) |> Enum.map(fn(ix) ->
+        %TestSubStruct{sub_id: ix, sub_name: "sub thing #{ix}"}
+      end)
       %TestStruct{id: 42,
                   name: "my thing",
                   list_of_ints: [4, 8, 15, 16, 23, 42],
@@ -71,7 +77,8 @@ defmodule Thrash.BinaryTest do
                   sub_struct: sub_struct,
                   flag: true,
                   floatval: 3.14159265,
-                  taco_pref: :carnitas}
+                  taco_pref: :carnitas,
+                  list_of_structs: list_of_sub_structs}
     end
   end
 

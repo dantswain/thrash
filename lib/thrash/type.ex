@@ -7,4 +7,6 @@ defmodule Thrash.Type do
   def id(:string), do: 11
   def id(:struct), do: 12
   def id(:list), do: 15
+  # fallthrough case is a struct
+  def id(_), do: id(:struct)
 end

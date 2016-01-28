@@ -60,6 +60,10 @@ implementing the functionality that I need.
   be possible to build something like that using Thrash.  Pull
   requests are welcomed.
 
+* The code is currently very much a mess and needs to be
+  refactored/cleaned up.  I've been focused on implementing the
+  features I need and will revisit this soon.
+
 ## Benchmarks
 
 Thrash is significantly faster at serialization/deserialization than
@@ -100,7 +104,8 @@ Done
 ```
 
 According to these results, Thrash is about 5x faster for
-serialization and about 18x faster for deserialization.
+serialization and about 18x faster for deserialization compared to the
+official Erlang library.
 
 ## Usage
 

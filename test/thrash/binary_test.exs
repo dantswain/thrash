@@ -10,15 +10,12 @@ defmodule Thrash.BinaryTest do
   end
 
   defmodule TacoType do
-    @mapping %{
-      carnitas: 124
-    }
-
-    @reverse_mapping Enum.into(@mapping, []) |> Enum.map(fn({k, v}) -> {v, k} end) |> Enum.into(%{})
-
-    def id(sym), do: @mapping[sym]
-
-    def atom(id), do: @reverse_mapping[id]
+    use Thrash.Enumerated, %{
+      barbacoa: 123,
+      carnitas: 124,
+      steak: 125,
+      chicken: 126,
+      pastor: 127}
   end
 
   defmodule TestSubStruct do

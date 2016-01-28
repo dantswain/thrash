@@ -22,8 +22,7 @@ defmodule Thrash.BinaryTest do
     defstruct sub_id: nil, sub_name: nil
 
     require Thrash.Protocol.Binary
-    Thrash.Protocol.Binary.generate_deserializer(sub_id: :i32, sub_name: :string)
-    Thrash.Protocol.Binary.generate_serializer(sub_id: :i32, sub_name: :string)
+    Thrash.Protocol.Binary.generate(sub_id: :i32, sub_name: :string)
   end
 
   defmodule TestStruct do

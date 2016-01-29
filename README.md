@@ -41,9 +41,8 @@ implementing the functionality that I need.
   data types should be relatively easy with the possible exceptions of
   map and set.
 
-* As of right now, the IDL must be manually translated from the
-  .thrift file to a format that Thrash understands.  Removing this
-  manual step is high on my priority list.
+* I haven't finalized the API for reading from the thrift IDL, and
+  enumerated types are not yet read automatically.
 
 * Enums are supported with some manual intervention.  This is also
   high on my priority list.
@@ -63,6 +62,9 @@ implementing the functionality that I need.
 * The code is currently very much a mess and needs to be
   refactored/cleaned up.  I've been focused on implementing the
   features I need and will revisit this soon.
+
+* Optional fields are not yet supported - this is a high priority for
+  me.
 
 ## Benchmarks
 

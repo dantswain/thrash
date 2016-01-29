@@ -60,9 +60,6 @@ implementing the functionality that I need.
   refactored/cleaned up.  I've been focused on implementing the
   features I need and will revisit this soon.
 
-* Optional fields are not yet supported - this is a high priority for
-  me.
-
 ## Benchmarks
 
 Thrash is significantly faster at serialization/deserialization than

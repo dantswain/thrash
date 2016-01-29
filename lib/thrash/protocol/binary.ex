@@ -14,15 +14,15 @@ defmodule Thrash.Protocol.Binary do
     << value :: 32-signed, rest :: binary >> = str
     deserialize_list(:i32, len - 1, {[value | acc], rest})
   end
-  def deserialize_list(struct_module, len, {acc, str}) do
+  def deserialize_list({:struct, struct_module}, len, {acc, str}) do
     {value, rest} = struct_module.deserialize(str)
-    deserialize_list(struct_module, len - 1, {[value | acc], rest})
+    deserialize_list({:struct, struct_module}, len - 1, {[value | acc], rest})
   end
 
   def serialize_list(:i32, list) do
     (for el <- list, do: << el :: 32-signed >>) |> Enum.join
   end
-  def serialize_list(struct_module, list) when is_atom(struct_module) do
+  def serialize_list({:struct, struct_module}, list) when is_atom(struct_module) do
     Enum.map(list, fn(el) -> struct_module.serialize(el) end) |> Enum.join
   end
 
@@ -32,6 +32,14 @@ defmodule Thrash.Protocol.Binary do
         serialize_field(0, val, <<>>)
       end
     end
+  end
+
+  defmacro generate(module, struct, overrides \\ []) do
+    thrift_def = Thrash.read_thrift_def(module, struct, overrides)
+    [generate_serialize()] ++
+      generate_field_serializers(thrift_def) ++
+      [generate_deserialize()] ++
+      generate_field_deserializers(thrift_def)
   end
 
   defmacro generate(thrift_def) do

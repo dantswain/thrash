@@ -20,6 +20,7 @@ defmodule Thrash.Mixfile do
   end
 
   def elixirc_paths(:dev), do: ["lib", "bench"]
+  def elixirc_paths(:test), do: ["lib", "test"]
   def elixirc_paths(_), do: ["lib"]
 
   # Dependencies can be Hex packages:
@@ -32,7 +33,7 @@ defmodule Thrash.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    [{:thrift_ex, github: "dantswain/thrift_ex", only: :dev},
+    [{:thrift_ex, github: "dantswain/thrift_ex"},
      {:benchwarmer, "~>0.0.2", only: :dev}]
   end
 end

@@ -1,5 +1,5 @@
 defmodule Thrash.BinaryTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: false
 
   def dump_bin(name, b) do
     IO.puts("#{name}:")
@@ -42,6 +42,16 @@ defmodule Thrash.BinaryTest do
                   flag: true,
                   floatval: 3.14159265,
                   taco_pref: :carnitas}
+  end
+
+  test "deserializes a struct" do
+    {deserialized, ""} = SimpleStruct.deserialize(test_str)
+    assert(deserialized == test_struct)
+  end
+
+  test "serializes a struct" do
+    serialized = SimpleStruct.serialize(test_struct)
+    assert(serialized == test_str)
   end
 
   test "deserializes a struct with optional fields absent" do

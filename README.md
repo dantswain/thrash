@@ -41,11 +41,8 @@ implementing the functionality that I need.
   data types should be relatively easy with the possible exceptions of
   map and set.
 
-* I haven't finalized the API for reading from the thrift IDL, and
-  enumerated types are not yet read automatically.
-
-* Enums are supported with some manual intervention.  This is also
-  high on my priority list.
+* I haven't finalized the API for reading from the thrift IDL, but it
+  is coming along.
 
 * I have been focused on Thrift Binary Protocol because that is what
   the official Erlang library implements and I want to be able to do

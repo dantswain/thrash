@@ -34,6 +34,7 @@ defmodule Thrash.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [{:thrift_ex, github: "dantswain/thrift_ex"},
+     {:quaff, github: "qhool/quaff"},
      {:benchwarmer, "~>0.0.2", only: :dev}]
   end
 end

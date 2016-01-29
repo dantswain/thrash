@@ -14,6 +14,19 @@ defmodule Thrash do
     end)
   end
 
+  def read_enum(header_file, namespace) do
+    Quaff.Constants.get_constants(header_file, [])
+    |> Enum.filter_map(
+      fn({k, _v}) -> Atom.to_string(k) |> String.starts_with?(namespace) end,
+      fn({k, v}) ->
+        {Atom.to_string(k)
+         |> String.replace(~r/^#{namespace}_/, "")
+         |> String.downcase
+         |> String.to_atom, v}
+        end)
+    |> Enum.into(%{})
+  end
+
   defp translate_type(type, name, overrides) do
     if Keyword.has_key?(overrides, name) do
       Keyword.get(overrides, name)

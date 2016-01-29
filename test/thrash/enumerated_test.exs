@@ -1,14 +1,8 @@
 defmodule Thrash.EnumeratedTest do
   use ExUnit.Case
 
-  defmodule TacoType do
-    use Thrash.Enumerated, %{
-      barbacoa: 123,
-      carnitas: 124,
-      steak: 125,
-      chicken: 126,
-      pastor: 127}
-  end
+  # note TacoType comes from test/simple_struct.ex, which is generated
+  # from the thrift hrl
 
   test "Creates a lookup from atom to id" do
     assert TacoType.id(:barbacoa) == 123

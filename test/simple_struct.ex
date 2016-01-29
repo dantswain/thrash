@@ -1,10 +1,6 @@
 defmodule TacoType do
-  use Thrash.Enumerated, %{
-    barbacoa: 123,
-    carnitas: 124,
-    steak: 125,
-    chicken: 126,
-    pastor: 127}
+  use Thrash.Enumerated, {"src/gen-erl/thrash_test_types.hrl",
+                          "THRASH_TEST_TACOTYPE"}
 end
 
 defmodule SubStruct do

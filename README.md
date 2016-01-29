@@ -45,11 +45,8 @@ implementing the functionality that I need.
   is coming along.
 
 * I have been focused on Thrift Binary Protocol because that is what
-  the official Erlang library implements and I want to be able to do
-  benchmark comparisons.  I will eventually implement the Binary
-  Accelerated Protocol, which is mostly the same as the Binary
-  Protocol with some special cases.  The official Erlang library does
-  not implement the Binary Accelerated Protocol.  I have no plans to
+  my use case needs and what the official Erlang library implements and
+  I want to be able to do benchmark comparisons.  I have no plans to
   implement other protocols, but would welcome pull requests.
 
 * There is no implementation here for services or servers.  It should

@@ -53,5 +53,5 @@ defmodule Thrash do
   end
   defp default_for_type(:bool), do: false
   defp default_for_type({:list, _}), do: []
-  defp default_for_type(x), do: nil
+  defp default_for_type(_), do: nil
 end

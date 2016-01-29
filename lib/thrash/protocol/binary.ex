@@ -65,7 +65,7 @@ defmodule Thrash.Protocol.Binary do
   def generate_deserialize() do
     quote do
       def deserialize(str, template \\ __struct__) do
-        deserialize_field(0, str, template)
+        deserialize_field(str, template)
       end
     end
   end
@@ -85,83 +85,75 @@ defmodule Thrash.Protocol.Binary do
 
   def deserializer(:bool, fieldname, ix) do
     quote do
-      def deserialize_field(unquote(ix),
-                            <<unquote(Type.id(:bool)), unquote(ix + 1) :: 16-unsigned, value :: 8-unsigned, rest :: binary >>,
+      def deserialize_field(<< unquote(Type.id(:bool)), unquote(ix + 1) :: 16-unsigned, value :: 8-unsigned, rest :: binary >>,
                             acc) do
         value = Thrash.Protocol.Binary.byte_to_bool(value)
-        deserialize_field(unquote(ix) + 1, rest, Map.put(acc, unquote(fieldname), value))
+        deserialize_field(rest, Map.put(acc, unquote(fieldname), value))
       end
     end
   end
   def deserializer(:double, fieldname, ix) do
     quote do
-      def deserialize_field(unquote(ix),
-                            << unquote(Type.id(:double)), unquote(ix + 1) :: 16-unsigned, value :: signed-float, rest :: binary >>,
+      def deserialize_field(<< unquote(Type.id(:double)), unquote(ix + 1) :: 16-unsigned, value :: signed-float, rest :: binary >>,
                             acc) do
-        deserialize_field(unquote(ix) + 1, rest, Map.put(acc, unquote(fieldname), value))
+        deserialize_field(rest, Map.put(acc, unquote(fieldname), value))
       end
     end
   end
   def deserializer(:i32, fieldname, ix) do
     quote do
-      def deserialize_field(unquote(ix),
-                            <<unquote(Type.id(:i32)), unquote(ix + 1) :: 16-unsigned, value :: 32-signed, rest :: binary>>,
+      def deserialize_field(<< unquote(Type.id(:i32)), unquote(ix + 1) :: 16-unsigned, value :: 32-signed, rest :: binary>>,
                             acc) do
-        deserialize_field(unquote(ix) + 1, rest, Map.put(acc, unquote(fieldname), value))
+        deserialize_field(rest, Map.put(acc, unquote(fieldname), value))
       end
     end
   end
   def deserializer({:enum, enum_module}, fieldname, ix) do
     quote do
-      def deserialize_field(unquote(ix),
-                            << unquote(Type.id(:enum)), unquote(ix + 1) :: 16-unsigned, value :: 32-signed, rest :: binary >>,
+      def deserialize_field(<< unquote(Type.id(:enum)), unquote(ix + 1) :: 16-unsigned, value :: 32-signed, rest :: binary >>,
                             acc) do
         value = unquote(enum_module).atom(value)
-        deserialize_field(unquote(ix) + 1, rest, Map.put(acc, unquote(fieldname), value))
+        deserialize_field(rest, Map.put(acc, unquote(fieldname), value))
       end
     end
   end
   def deserializer(:i64, fieldname, ix) do
     quote do
-      def deserialize_field(unquote(ix),
-                            <<unquote(Type.id(:i64)), unquote(ix + 1) :: 16-unsigned, value :: 64-signed, rest :: binary>>,
+      def deserialize_field(<< unquote(Type.id(:i64)), unquote(ix + 1) :: 16-unsigned, value :: 64-signed, rest :: binary>>,
                             acc) do
-        deserialize_field(unquote(ix) + 1, rest, Map.put(acc, unquote(fieldname), value))
+        deserialize_field(rest, Map.put(acc, unquote(fieldname), value))
       end
     end
   end
   def deserializer(:string, fieldname, ix) do
     quote do
-      def deserialize_field(unquote(ix),
-                            << unquote(Type.id(:string)), unquote(ix + 1) :: 16-unsigned, len :: 32-unsigned, value :: size(len)-binary, rest :: binary>>,
+      def deserialize_field(<< unquote(Type.id(:string)), unquote(ix + 1) :: 16-unsigned, len :: 32-unsigned, value :: size(len)-binary, rest :: binary>>,
                             acc) do
-        deserialize_field(unquote(ix) + 1, rest, Map.put(acc, unquote(fieldname), value))
+        deserialize_field(rest, Map.put(acc, unquote(fieldname), value))
       end
     end
   end
   def deserializer({:struct, struct_module}, fieldname, ix) do
     quote do
-      def deserialize_field(unquote(ix),
-                            << unquote(Type.id(:struct)), unquote(ix + 1) :: 16-unsigned, rest :: binary >>,
+      def deserialize_field(<< unquote(Type.id(:struct)), unquote(ix + 1) :: 16-unsigned, rest :: binary >>,
                             acc) do
         {sub_struct, rest} = unquote(struct_module).deserialize(rest)
-        deserialize_field(unquote(ix) + 1, rest, Map.put(acc, unquote(fieldname), sub_struct))
+        deserialize_field(rest, Map.put(acc, unquote(fieldname), sub_struct))
       end
     end
   end
   def deserializer({:list, of_type}, fieldname, ix) do
     quote do
-      def deserialize_field(unquote(ix),
-                            << unquote(Type.id(:list)), unquote(ix + 1) :: 16-unsigned, unquote(Type.id(of_type)), len :: 32-unsigned, rest :: binary >>,
+      def deserialize_field(<< unquote(Type.id(:list)), unquote(ix + 1) :: 16-unsigned, unquote(Type.id(of_type)), len :: 32-unsigned, rest :: binary >>,
                             acc) do
         {list, rest} = Thrash.Protocol.Binary.deserialize_list(unquote(of_type), len, {[], rest})
-        deserialize_field(unquote(ix) + 1, rest, Map.put(acc, unquote(fieldname), Enum.reverse(list)))
+        deserialize_field(rest, Map.put(acc, unquote(fieldname), Enum.reverse(list)))
       end
     end
   end
-  def deserializer(nil, :final, ix) do
+  def deserializer(nil, :final, _ix) do
     quote do
-      def deserialize_field(unquote(ix), << 0, remainder :: binary >>, acc), do: {acc, remainder}
+      def deserialize_field(<< 0, remainder :: binary >>, acc), do: {acc, remainder}
     end
   end
 

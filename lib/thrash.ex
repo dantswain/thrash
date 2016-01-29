@@ -7,8 +7,8 @@ defmodule Thrash do
     end)
   end
 
-  def read_struct_def(mod, struct_name, defaults \\ []) do
-    read_thrift_def(mod, struct_name)
+  def read_struct_def(mod, struct_name, overrides \\ [], defaults \\ []) do
+    read_thrift_def(mod, struct_name, overrides)
     |> Enum.map(fn({k, v}) ->
       {k, Keyword.get(defaults, k, default_for_type(v))}
     end)

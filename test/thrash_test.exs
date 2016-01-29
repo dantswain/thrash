@@ -33,7 +33,8 @@ defmodule ThrashTest do
 
     assert expected == Thrash.read_struct_def(:thrash_test_types,
                                               :'SimpleStruct',
-                                              taco_pref: :chicken)
+                                              [taco_pref: {:enum, TacoType}],
+                                              [taco_pref: :chicken])
   end
 
   test "reading an enum from a thrift-generated hrl file" do

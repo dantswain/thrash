@@ -1,41 +1,31 @@
 defmodule Bench do
   defmodule TacoType do
-    use Thrash.Enumerated, %{
-      barbacoa: 123,
-      carnitas: 124,
-      steak: 125,
-      chicken: 126,
-      pastor: 127}
+    use Thrash.Enumerated, {"src/gen-erl/thrash_test_types.hrl",
+                            "THRASH_TEST_TACOTYPE"}
   end
 
   defmodule TestSubStruct do
-    defstruct sub_id: nil, sub_name: nil
+    defstruct(Thrash.read_struct_def(:thrash_test_types, :'SubStruct'))
 
     require Thrash.Protocol.Binary
-    Thrash.Protocol.Binary.generate(sub_id: :i32, sub_name: :string)
+    Thrash.Protocol.Binary.generate(:thrash_test_types, :'SubStruct')
   end
 
-  defmodule TestStruct do
-    defstruct(id: nil,
-              name: nil,
-              list_of_ints: [],
-              bigint: nil,
-              sub_struct: %TestSubStruct{},
-              flag: false,
-              floatval: nil,
-              taco_pref: :chicken,
-              list_of_structs: [])
+  defmodule TestSimpleStruct do
+    defstruct(Thrash.read_struct_def(:thrash_test_types,
+                                     :'SimpleStruct',
+                                     [taco_pref: {:enum, TacoType},
+                                      sub_struct: {:struct, TestSubStruct},
+                                      list_of_structs: {:list, {:struct, TestSubStruct}}],
+                                     [taco_pref: :chicken,
+                                      sub_struct: %TestSubStruct{}]))
 
     require Thrash.Protocol.Binary
-    Thrash.Protocol.Binary.generate(id: :i32,
-                                    name: :string,
-                                    list_of_ints: {:list, :i32},
-                                    bigint: :i64,
-                                    sub_struct: {:struct, TestSubStruct},
-                                    flag: :bool,
-                                    floatval: :double,
+    Thrash.Protocol.Binary.generate(:thrash_test_types,
+                                    :'SimpleStruct',
                                     taco_pref: {:enum, TacoType},
-                                    list_of_structs: {:list, TestSubStruct})
+                                    sub_struct: {:struct, TestSubStruct},
+                                    list_of_structs: {:list, {:struct, TestSubStruct}})
   end
 
   def bench_thrift_ex() do
@@ -75,26 +65,26 @@ defmodule Bench do
     list_of_sub_structs = (1..5) |> Enum.map(fn(ix) ->
       %TestSubStruct{sub_id: ix, sub_name: "sub thing #{ix}"}
     end)
-    s = %TestStruct{id: 42,
-                    name: "my thing",
-                    list_of_ints: [4, 8, 15, 16, 23, 42],
-                    bigint: -9999999999999,
-                    sub_struct: sub_struct,
-                    flag: true,
-                    floatval: 3.14159265,
-                    taco_pref: :carnitas,
-                    list_of_structs: list_of_sub_structs}
+    s = %TestSimpleStruct{id: 42,
+                          name: "my thing",
+                          list_of_ints: [4, 8, 15, 16, 23, 42],
+                          bigint: -9999999999999,
+                          sub_struct: sub_struct,
+                          flag: true,
+                          floatval: 3.14159265,
+                          taco_pref: :carnitas,
+                          list_of_structs: list_of_sub_structs}
 
-    str = TestStruct.serialize(s)
+    str = TestSimpleStruct.serialize(s)
 
     IO.puts("Benchmarking Thrash serialization")
     Benchwarmer.benchmark(fn ->
-      TestStruct.serialize(s)
+      TestSimpleStruct.serialize(s)
     end)
 
     IO.puts("Benchmarking Thrash deserialization")
     Benchwarmer.benchmark(fn ->
-      TestStruct.deserialize(str)
+      TestSimpleStruct.deserialize(str)
     end)
 
     IO.puts("Done")

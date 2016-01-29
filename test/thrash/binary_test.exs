@@ -5,7 +5,7 @@ defmodule Thrash.BinaryTest do
     IO.puts("#{name}:")
     b
     |> :binary.bin_to_list
-    |> Enum.chunk(25, 25, [])
+    |> Enum.chunk(50, 50, [])
     |> Enum.each(fn(c) -> IO.puts(inspect c) end)
   end
 
@@ -30,13 +30,27 @@ defmodule Thrash.BinaryTest do
                   list_of_structs: list_of_sub_structs}
   end
 
-  test "deserializes a struct" do
-    {deserialized, ""} = SimpleStruct.deserialize(test_str)
-    assert(deserialized == test_struct)
+  def optionals_str do
+    hex = "0800010000002A0F0003080000000600000004000000080000000F00000010000000170000002A0A0004FFFFF6E7B18D600102000601040007400921FB53C8D4F10800080000007C00"
+    Base.decode16!(hex)
   end
 
-  test "serializes a struct" do
-    serialized = SimpleStruct.serialize(test_struct)
-    assert(serialized == test_str)
+  def optionals_struct do
+    %SimpleStruct{id: 42,
+                  list_of_ints: [4, 8, 15, 16, 23, 42],
+                  bigint: -9999999999999,
+                  flag: true,
+                  floatval: 3.14159265,
+                  taco_pref: :carnitas}
+  end
+
+  test "deserializes a struct with optional fields absent" do
+    {deserialized, ""} = SimpleStruct.deserialize(optionals_str)
+    assert(deserialized == optionals_struct)
+  end
+
+  test "serializes a struct with optional fields absent" do
+    serialized = SimpleStruct.serialize(optionals_struct)
+    assert(serialized == optionals_str)
   end
 end

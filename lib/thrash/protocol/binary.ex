@@ -168,10 +168,15 @@ defmodule Thrash.Protocol.Binary do
   def serializer(:bool, fieldname, ix) do
     quote do
       def serialize_field(unquote(ix), val, acc) do
-        value = Thrash.Protocol.Binary.bool_to_byte(Map.get(val, unquote(fieldname)))
-        serialize_field(unquote(ix) + 1,
-                        val,
-                        acc <> << unquote(Type.id(:bool)), unquote(ix) + 1 :: 16-unsigned, value :: 8-unsigned >>)
+        value = Map.get(val, unquote(fieldname))
+        if value == nil do
+          serialize_field(unquote(ix) + 1, val, acc)
+        else
+          value = Thrash.Protocol.Binary.bool_to_byte(value)
+          serialize_field(unquote(ix) + 1,
+                          val,
+                          acc <> << unquote(Type.id(:bool)), unquote(ix) + 1 :: 16-unsigned, value :: 8-unsigned >>)
+        end
       end
     end
   end
@@ -179,62 +184,93 @@ defmodule Thrash.Protocol.Binary do
     quote do
       def serialize_field(unquote(ix), val, acc) do
         value = Map.get(val, unquote(fieldname))
-        serialize_field(unquote(ix) + 1, val,
-                        acc <> << unquote(Type.id(:double)), unquote(ix) + 1 :: 16-unsigned, value :: signed-float >>)
+        if value == nil do
+          serialize_field(unquote(ix) + 1, val, acc)
+        else
+          serialize_field(unquote(ix) + 1, val,
+                          acc <> << unquote(Type.id(:double)), unquote(ix) + 1 :: 16-unsigned, value :: signed-float >>)
+        end
       end
     end
   end
   def serializer(:i32, fieldname, ix) do
     quote do
       def serialize_field(unquote(ix), val, acc) do
-        serialize_field(unquote(ix) + 1, val,
-                        acc <> << unquote(Type.id(:i32)), unquote(ix) + 1 :: 16-unsigned, (Map.get(val, unquote(fieldname))) :: 32-signed >>)
+        value = Map.get(val, unquote(fieldname))
+        if value == nil do
+          serialize_field(unquote(ix) + 1, val, acc)
+        else
+          serialize_field(unquote(ix) + 1, val,
+                          acc <> << unquote(Type.id(:i32)), unquote(ix) + 1 :: 16-unsigned, value :: 32-signed >>)
+        end
       end
     end
   end
   def serializer({:enum, enum_module}, fieldname, ix) do
     quote do
       def serialize_field(unquote(ix), val, acc) do
-        value = unquote(enum_module).id(Map.get(val, unquote(fieldname)))
-        serialize_field(unquote(ix) + 1, val,
-                        acc <> << unquote(Type.id(:enum)), unquote(ix) + 1 :: 16-unsigned, value :: 32-unsigned >>)
+        value = Map.get(val, unquote(fieldname))
+        if value == nil do
+          serialize_field(unquote(ix) + 1, val, acc)
+        else
+          value = unquote(enum_module).id(Map.get(val, unquote(fieldname)))
+          serialize_field(unquote(ix) + 1, val,
+                          acc <> << unquote(Type.id(:enum)), unquote(ix) + 1 :: 16-unsigned, value :: 32-unsigned >>)
+        end
       end
     end
   end
   def serializer(:i64, fieldname, ix) do
     quote do
       def serialize_field(unquote(ix), val, acc) do
-        serialize_field(unquote(ix) + 1, val,
-                        acc <> << unquote(Type.id(:i64)), unquote(ix) + 1 :: 16-unsigned, (Map.get(val, unquote(fieldname))) :: 64-signed >>)
+        value = Map.get(val, unquote(fieldname))
+        if value == nil do
+          serialize_field(unquote(ix) + 1, val, acc)
+        else
+          serialize_field(unquote(ix) + 1, val,
+                          acc <> << unquote(Type.id(:i64)), unquote(ix) + 1 :: 16-unsigned, value :: 64-signed >>)
+        end
       end
     end
   end
   def serializer(:string, fieldname, ix) do
     quote do
       def serialize_field(unquote(ix), val, acc) do
-        str = Map.get(val, unquote(fieldname))
-        serialize_field(unquote(ix) + 1, val,
-                        acc <> << unquote(Type.id(:string)), unquote(ix) + 1 :: 16-unsigned, byte_size(str) :: 32-unsigned, str :: binary >>)
+        value = Map.get(val, unquote(fieldname))
+        if value == nil do
+          serialize_field(unquote(ix) + 1, val, acc)
+        else
+          serialize_field(unquote(ix) + 1, val,
+                          acc <> << unquote(Type.id(:string)), unquote(ix) + 1 :: 16-unsigned, byte_size(value) :: 32-unsigned, value :: binary >>)
+        end
       end
     end
   end
   def serializer({:struct, struct_module}, fieldname, ix) do
     quote do
       def serialize_field(unquote(ix), val, acc) do
-        sub_str = Map.get(val, unquote(fieldname))
-        header = << unquote(Type.id(:struct)), unquote(ix) + 1 :: 16-unsigned >>
-        serialized = unquote(struct_module).serialize(sub_str)
-        serialize_field(unquote(ix) + 1, val, acc <> header <> serialized)
+        value = Map.get(val, unquote(fieldname))
+        if value == nil || value == unquote(struct_module).__struct__ do
+          serialize_field(unquote(ix) + 1, val, acc)
+        else
+          header = << unquote(Type.id(:struct)), unquote(ix) + 1 :: 16-unsigned >>
+          serialized = unquote(struct_module).serialize(value)
+          serialize_field(unquote(ix) + 1, val, acc <> header <> serialized)
+        end
       end
     end
   end
   def serializer({:list, of_type}, fieldname, ix) do
     quote do
       def serialize_field(unquote(ix), val, acc) do
-        list = Map.get(val, unquote(fieldname))
-        header = << unquote(Type.id(:list)), unquote(ix) + 1 :: 16-unsigned, unquote(Type.id(of_type)), length(list) :: 32-unsigned >>
-        serialized = Thrash.Protocol.Binary.serialize_list(unquote(of_type), list)
-        serialize_field(unquote(ix) + 1, val, acc <> header <> serialized)
+        value = Map.get(val, unquote(fieldname))
+        if value == nil || value == [] do
+          serialize_field(unquote(ix) + 1, val, acc)
+        else
+          header = << unquote(Type.id(:list)), unquote(ix) + 1 :: 16-unsigned, unquote(Type.id(of_type)), length(value) :: 32-unsigned >>
+          serialized = Thrash.Protocol.Binary.serialize_list(unquote(of_type), value)
+          serialize_field(unquote(ix) + 1, val, acc <> header <> serialized)
+        end
       end
     end
   end

@@ -112,7 +112,7 @@ Since this is still very much work in progress, I have not published
 anything to Hex and it doesn't make sense to write up careful usage
 instructions when that could change with the next commit.  If you want
 to pull down this repository and poke around, check out
-`test/thrash/binary_test.exs` to see how the API is currently being
+`test/simple_struct.ex` to see how the API is currently being
 used.
 
 To build and run local development, you need to generate the ThriftEx

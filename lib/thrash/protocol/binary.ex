@@ -19,13 +19,6 @@ defmodule Thrash.Protocol.Binary do
     deserialize_list({:struct, struct_module}, len - 1, {[value | acc], rest})
   end
 
-  def serialize_list(:i32, list) do
-    (for el <- list, do: << el :: 32-signed >>) |> Enum.join
-  end
-  def serialize_list({:struct, struct_module}, list) when is_atom(struct_module) do
-    Enum.map(list, fn(el) -> struct_module.serialize(el) end) |> Enum.join
-  end
-
   def generate_serialize() do
     quote do
       def serialize(val) do
@@ -163,45 +156,49 @@ defmodule Thrash.Protocol.Binary do
     end
   end
 
-  def value_serializer(:bool) do
+  def value_serializer(:bool, var) do
     quote do
-      << Thrash.Protocol.Binary.bool_to_byte(value) :: 8-unsigned >>
+      << Thrash.Protocol.Binary.bool_to_byte(unquote(Macro.var(var, __MODULE__))) :: 8-unsigned >>
     end
   end
-  def value_serializer(:double) do
+  def value_serializer(:double, var) do
     quote do
-      << value :: signed-float >>
+      << unquote(Macro.var(var, __MODULE__)) :: signed-float >>
     end
   end
-  def value_serializer(:i32) do
+  def value_serializer(:i32, var) do
     quote do
-      << value :: 32-signed >>
+      << unquote(Macro.var(var, __MODULE__)) :: 32-signed >>
     end
   end
-  def value_serializer({:enum, enum_module}) do
+  def value_serializer({:enum, enum_module}, var) do
     quote do
-      << unquote(enum_module).id(value) :: 32-unsigned >>
+      << unquote(enum_module).id(unquote(Macro.var(var, __MODULE__))) :: 32-unsigned >>
     end
   end
-  def value_serializer(:i64) do
+  def value_serializer(:i64, var) do
     quote do
-      << value :: 64-signed >>
+      << unquote(Macro.var(var, __MODULE__)) :: 64-signed >>
     end
   end
-  def value_serializer(:string) do
+  def value_serializer(:string, var) do
     quote do
-      << byte_size(value) :: 32-unsigned, value :: binary >>
+      << byte_size(unquote(Macro.var(var, __MODULE__))) :: 32-unsigned,
+      unquote(Macro.var(var, __MODULE__)) :: binary >>
     end
   end
-  def value_serializer({:struct, struct_module}) do
+  def value_serializer({:struct, struct_module}, var) do
     quote do
-      unquote(struct_module).serialize(value)
+      unquote(struct_module).serialize(unquote(Macro.var(var, __MODULE__)))
     end
   end
-  def value_serializer({:list, of_type}) do
+  def value_serializer({:list, of_type}, var) do
     quote do
-      << unquote(Type.id(of_type)), length(value) :: 32-unsigned >> <>
-        Thrash.Protocol.Binary.serialize_list(unquote(of_type), value)
+      << unquote(Type.id(of_type)),
+      length(unquote(Macro.var(var, __MODULE__))) :: 32-unsigned >> <>
+      (Enum.map(unquote(Macro.var(var, __MODULE__)),
+            fn(v) -> unquote(value_serializer(of_type, :v)) end)
+       |> Enum.join)
     end
   end
 
@@ -243,7 +240,7 @@ defmodule Thrash.Protocol.Binary do
           serialize_field(unquote(ix) + 1,
                           val,
                           acc <> unquote(splice_binaries(header(type, ix),
-                                                         value_serializer(type))))
+                                                         value_serializer(type, :value))))
         end
       end
     end

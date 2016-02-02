@@ -157,118 +157,103 @@ defmodule Thrash.Protocol.Binary do
     end
   end
 
-  def serializer(:bool, fieldname, ix) do
+  def header(type, ix) do
     quote do
-      def serialize_field(unquote(ix), val, acc) do
-        value = Map.get(val, unquote(fieldname))
-        if value == nil do
-          serialize_field(unquote(ix) + 1, val, acc)
-        else
-          value = Thrash.Protocol.Binary.bool_to_byte(value)
-          serialize_field(unquote(ix) + 1,
-                          val,
-                          acc <> << unquote(Type.id(:bool)), unquote(ix) + 1 :: 16-unsigned, value :: 8-unsigned >>)
-        end
-      end
+      << unquote(Type.id(type)), unquote(ix) + 1 :: 16-unsigned >>
     end
   end
-  def serializer(:double, fieldname, ix) do
+
+  def value_serializer(:bool) do
     quote do
-      def serialize_field(unquote(ix), val, acc) do
-        value = Map.get(val, unquote(fieldname))
-        if value == nil do
-          serialize_field(unquote(ix) + 1, val, acc)
-        else
-          serialize_field(unquote(ix) + 1, val,
-                          acc <> << unquote(Type.id(:double)), unquote(ix) + 1 :: 16-unsigned, value :: signed-float >>)
-        end
-      end
+      << Thrash.Protocol.Binary.bool_to_byte(value) :: 8-unsigned >>
     end
   end
-  def serializer(:i32, fieldname, ix) do
+  def value_serializer(:double) do
     quote do
-      def serialize_field(unquote(ix), val, acc) do
-        value = Map.get(val, unquote(fieldname))
-        if value == nil do
-          serialize_field(unquote(ix) + 1, val, acc)
-        else
-          serialize_field(unquote(ix) + 1, val,
-                          acc <> << unquote(Type.id(:i32)), unquote(ix) + 1 :: 16-unsigned, value :: 32-signed >>)
-        end
-      end
+      << value :: signed-float >>
     end
   end
-  def serializer({:enum, enum_module}, fieldname, ix) do
+  def value_serializer(:i32) do
     quote do
-      def serialize_field(unquote(ix), val, acc) do
-        value = Map.get(val, unquote(fieldname))
-        if value == nil do
-          serialize_field(unquote(ix) + 1, val, acc)
-        else
-          value = unquote(enum_module).id(Map.get(val, unquote(fieldname)))
-          serialize_field(unquote(ix) + 1, val,
-                          acc <> << unquote(Type.id(:enum)), unquote(ix) + 1 :: 16-unsigned, value :: 32-unsigned >>)
-        end
-      end
+      << value :: 32-signed >>
     end
   end
-  def serializer(:i64, fieldname, ix) do
+  def value_serializer({:enum, enum_module}) do
     quote do
-      def serialize_field(unquote(ix), val, acc) do
-        value = Map.get(val, unquote(fieldname))
-        if value == nil do
-          serialize_field(unquote(ix) + 1, val, acc)
-        else
-          serialize_field(unquote(ix) + 1, val,
-                          acc <> << unquote(Type.id(:i64)), unquote(ix) + 1 :: 16-unsigned, value :: 64-signed >>)
-        end
-      end
+      << unquote(enum_module).id(value) :: 32-unsigned >>
     end
   end
-  def serializer(:string, fieldname, ix) do
+  def value_serializer(:i64) do
     quote do
-      def serialize_field(unquote(ix), val, acc) do
-        value = Map.get(val, unquote(fieldname))
-        if value == nil do
-          serialize_field(unquote(ix) + 1, val, acc)
-        else
-          serialize_field(unquote(ix) + 1, val,
-                          acc <> << unquote(Type.id(:string)), unquote(ix) + 1 :: 16-unsigned, byte_size(value) :: 32-unsigned, value :: binary >>)
-        end
-      end
+      << value :: 64-signed >>
     end
   end
-  def serializer({:struct, struct_module}, fieldname, ix) do
+  def value_serializer(:string) do
     quote do
-      def serialize_field(unquote(ix), val, acc) do
-        value = Map.get(val, unquote(fieldname))
-        if value == nil || value == unquote(struct_module).__struct__ do
-          serialize_field(unquote(ix) + 1, val, acc)
-        else
-          header = << unquote(Type.id(:struct)), unquote(ix) + 1 :: 16-unsigned >>
-          serialized = unquote(struct_module).serialize(value)
-          serialize_field(unquote(ix) + 1, val, acc <> header <> serialized)
-        end
-      end
+      << byte_size(value) :: 32-unsigned, value :: binary >>
     end
   end
-  def serializer({:list, of_type}, fieldname, ix) do
+  def value_serializer({:struct, struct_module}) do
     quote do
-      def serialize_field(unquote(ix), val, acc) do
-        value = Map.get(val, unquote(fieldname))
-        if value == nil || value == [] do
-          serialize_field(unquote(ix) + 1, val, acc)
-        else
-          header = << unquote(Type.id(:list)), unquote(ix) + 1 :: 16-unsigned, unquote(Type.id(of_type)), length(value) :: 32-unsigned >>
-          serialized = Thrash.Protocol.Binary.serialize_list(unquote(of_type), value)
-          serialize_field(unquote(ix) + 1, val, acc <> header <> serialized)
-        end
-      end
+      unquote(struct_module).serialize(value)
     end
   end
+  def value_serializer({:list, of_type}) do
+    quote do
+      << unquote(Type.id(of_type)), length(value) :: 32-unsigned >> <>
+        Thrash.Protocol.Binary.serialize_list(unquote(of_type), value)
+    end
+  end
+
+  def empty_value?(_type, nil), do: true
+  def empty_value?({:struct, _}, nil), do: true
+  def empty_value?({:struct, struct_module}, value) do
+    value == struct_module.__struct__
+  end
+  def empty_value?({:list, _}, []), do: true
+  def empty_value?(_type, _), do: false
+
+  def empty_value?({:struct, struct_module}) do
+    quote do
+      value == nil || value == unquote(struct_module).__struct__
+    end
+  end
+  def empty_value?({:list, _}) do
+    quote do
+      value == nil || value == []
+    end
+  end
+  def empty_value?(_) do
+    quote do
+      value == nil
+    end
+  end
+
+  def splice_binaries({:<<>>, _, p1}, {:<<>>, _, p2}) do
+    {:<<>>, [], p1 ++ p2}
+  end
+  def splice_binaries(b1, b2) do
+    quote do: unquote(b1) <> unquote(b2)
+  end
+
   def serializer(nil, :final, ix) do
     quote do
       def serialize_field(unquote(ix), _, acc), do: acc <> << 0 >>
+    end
+  end
+  def serializer(type, fieldname, ix) do
+    quote do
+      def serialize_field(unquote(ix), val, acc) do
+        value = Map.get(val, unquote(fieldname))
+        if unquote(empty_value?(type)) do
+          serialize_field(unquote(ix) + 1, val, acc)
+        else
+          serialize_field(unquote(ix) + 1,
+                          val,
+                          acc <> unquote(splice_binaries(header(type, ix),
+                                                         value_serializer(type))))
+        end
+      end
     end
   end
 end

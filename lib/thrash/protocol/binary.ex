@@ -205,14 +205,6 @@ defmodule Thrash.Protocol.Binary do
     end
   end
 
-  def empty_value?(_type, nil), do: true
-  def empty_value?({:struct, _}, nil), do: true
-  def empty_value?({:struct, struct_module}, value) do
-    value == struct_module.__struct__
-  end
-  def empty_value?({:list, _}, []), do: true
-  def empty_value?(_type, _), do: false
-
   def empty_value?({:struct, struct_module}) do
     quote do
       value == nil || value == unquote(struct_module).__struct__

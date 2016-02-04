@@ -59,16 +59,19 @@ defmodule Thrash.Protocol.Binary do
   def byte_to_bool(1), do: true
   def byte_to_bool(0), do: false
 
-  def deserialize_list(_, 0, {acc, str}) do
-    {Enum.reverse(acc), str}
-  end
-  def deserialize_list(:i32, len, {acc, str}) do
-    << value :: 32-signed, rest :: binary >> = str
-    deserialize_list(:i32, len - 1, {[value | acc], rest})
-  end
-  def deserialize_list({:struct, struct_module}, len, {acc, str}) do
-    {value, rest} = struct_module.deserialize(str)
-    deserialize_list({:struct, struct_module}, len - 1, {[value | acc], rest})
+  def list_deserializer(type, lengthvar, restvar) do
+    quote do
+      list_deserializer = fn
+        (0, {acc, rest}, _recurser) -> {Enum.reverse(acc), rest}
+        (n, {acc, str}, recurser) ->
+          unquote(splice_binaries(value_matcher(type, :value), quote do: << rest :: binary >>)) = str
+          {value, rest} = unquote(value_mapper(type, :value, :rest))
+          recurser.(n - 1, {[value | acc], rest}, recurser)
+      end
+      list_deserializer.(unquote(Macro.var(lengthvar, __MODULE__)),
+                         {[], unquote(Macro.var(restvar, __MODULE__))},
+                         list_deserializer)
+    end
   end
 
   def generate_serialize() do
@@ -196,11 +199,7 @@ defmodule Thrash.Protocol.Binary do
     end
   end
   def value_mapper({:list, of_type}, var, rest) do
-    quote do
-      Thrash.Protocol.Binary.deserialize_list(unquote(of_type),
-                                              unquote(Macro.var(var, __MODULE__)),
-                                              {[], unquote(Macro.var(rest, __MODULE__))})
-    end
+    list_deserializer(of_type, var, rest)
   end
   def value_mapper(_type, val, rest) do
     # note the tuple is the same as its quoted value, so we don't need

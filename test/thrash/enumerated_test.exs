@@ -11,4 +11,13 @@ defmodule Thrash.EnumeratedTest do
   test "Creates a lookup from id to atom" do
     assert TacoType.atom(125) == :steak
   end
+
+  # using a different module name
+  defmodule TacoVariety do
+    use Thrash.Enumerated, TacoType
+  end
+
+  test "manual module name works" do
+    assert TacoVariety.id(:barbacoa) == 123
+  end
 end

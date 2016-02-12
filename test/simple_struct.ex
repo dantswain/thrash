@@ -1,6 +1,5 @@
 defmodule TacoType do
-  use Thrash.Enumerated, {"src/gen-erl/thrash_test_types.hrl",
-                          "THRASH_TEST_TACOTYPE"}
+  use Thrash.Enumerated
 end
 
 defmodule SubStruct do

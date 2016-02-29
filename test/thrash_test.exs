@@ -36,16 +36,4 @@ defmodule ThrashTest do
                                               [taco_pref: {:enum, TacoType}],
                                               [taco_pref: :chicken])
   end
-
-  test "reading an enum from a thrift-generated hrl file" do
-    expected = %{
-      barbacoa: 123,
-      carnitas: 124,
-      steak: 125,
-      chicken: 126,
-      pastor: 127}
-
-    assert expected == Thrash.read_enum("src/gen-erl/thrash_test_types.hrl",
-                                        "THRASH_TEST_TACOTYPE")
-  end
 end

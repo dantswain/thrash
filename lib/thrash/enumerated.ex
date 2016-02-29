@@ -26,10 +26,11 @@ defmodule Thrash.Enumerated do
   """
 
   alias Thrash.ThriftMeta
+  alias Thrash.MacroHelpers
 
   # there is probably a more idiomatic way to do a lot of this..
   defmacro __using__(override_module) do
-    module = determine_module_name(override_module, __CALLER__)
+    module = MacroHelpers.determine_module_name(override_module, __CALLER__)
     build_enumerated(module)
   end
 
@@ -49,13 +50,9 @@ defmodule Thrash.Enumerated do
   end
 
   defp find_in_thrift(modname) do
-    headers = ThriftMeta.types_headers(ThriftMeta.erl_gen_path())
-    Enum.find_value(headers, :enum_not_found, fn(h) ->
-      case ThriftMeta.read_enum(h, modname) do
-        {:ok, enum} -> enum
-        {:error, _} -> nil
-      end
-    end)
+    ThriftMeta.find_in_thrift(fn(h) ->
+      ThriftMeta.read_enum(h, modname)
+    end, :enum_not_found)
   end
 
   defp reverse_kv(kv) do
@@ -69,18 +66,5 @@ defmodule Thrash.Enumerated do
 
   defp build_reverse({:%{}, line, kv}) do
     {:%{}, line, reverse_kv(kv)}
-  end
-
-  defp determine_module_name([], caller) do
-    get_caller_module_name(caller)
-  end
-  defp determine_module_name({_, _, [module]}, _) do
-    module
-  end
-
-  defp get_caller_module_name(caller) do
-    Macro.expand(quote do
-                   __MODULE__
-    end, caller)
   end
 end

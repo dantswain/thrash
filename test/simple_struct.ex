@@ -3,7 +3,7 @@ defmodule TacoType do
 end
 
 defmodule SubStruct do
-  defstruct(Thrash.read_struct_def(:thrash_test_types, :'SubStruct'))
+  use Thrash.Protocol.Binary
 
   require Thrash.Protocol.Binary
   Thrash.Protocol.Binary.generate(:thrash_test_types, :'SubStruct')

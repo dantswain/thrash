@@ -1,4 +1,4 @@
-namespace erl thraft
+namespace erl thrash
 
 enum TacoType {
   BARBACOA = 123,

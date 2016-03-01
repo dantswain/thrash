@@ -44,6 +44,11 @@ defmodule Thrash.BinaryTest do
                   taco_pref: :carnitas}
   end
 
+  test "defined struct has the correct defaults" do
+    struct = %SimpleStruct{}
+    assert :chicken == struct.taco_pref
+  end
+
   test "deserializes a struct" do
     {deserialized, ""} = SimpleStruct.deserialize(test_str)
     assert(deserialized == test_struct)

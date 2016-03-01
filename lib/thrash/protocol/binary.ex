@@ -5,10 +5,8 @@ defmodule Thrash.Protocol.Binary do
 
   defmacro __using__(override_module) do
     modulename = MacroHelpers.determine_module_name(override_module, __CALLER__)
-    thrift_def = find_in_thrift(modulename)
-    struct_def = Thrash.StructDef.to_defstruct(thrift_def)
     quote do
-      defstruct(unquote(struct_def))
+      defstruct(Thrash.StructDef.to_defstruct(Thrash.Protocol.Binary.find_in_thrift(unquote(modulename))))
     end
   end
 

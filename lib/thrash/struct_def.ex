@@ -42,7 +42,8 @@ defmodule Thrash.StructDef do
   end
   defp translate_type(other_type), do: other_type
 
-  defp translate_default({:struct, struct_module}, :undefined) do
+  defp translate_default({:struct, {_namespace, struct_module}}, _) do
+    struct_module = Thrash.MacroHelpers.atom_to_elixir_module(struct_module)
     struct_module.__struct__
   end
   defp translate_default(:bool, :undefined), do: false

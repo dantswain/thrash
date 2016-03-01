@@ -11,7 +11,7 @@ defmodule Thrash.StructDef do
     try do
       {:ok, modulename.struct_info_ext(struct_name)}
     rescue
-      e in FunctionClauseError ->
+      _e in FunctionClauseError ->
         {:error, []}
     end
     |> maybe_do(fn(struct_info) -> from_struct_info(struct_info) end)
@@ -52,7 +52,7 @@ defmodule Thrash.StructDef do
   defp maybe_do({:ok, x}, f) do
     {:ok, f.(x)}
   end
-  defp maybe_do({:error, x}), do: {:error, x}
+  defp maybe_do({:error, x}, _f), do: {:error, x}
 
   defp translate_type({:struct, {_from_mod, struct_module}}) do
     {:struct, Thrash.MacroHelpers.atom_to_elixir_module(struct_module)}

@@ -53,7 +53,7 @@ defmodule Thrash.ThriftMeta do
   def read_struct(header_file, struct_name) do
     basename = Path.basename(header_file, ".hrl")
     modulename = String.to_atom(basename)
-    struct_name = enum_name_string = last_part_of_atom_as_atom(struct_name)
+    struct_name = last_part_of_atom_as_atom(struct_name)
     Thrash.StructDef.read(modulename, struct_name)
   end
 
@@ -120,10 +120,6 @@ defmodule Thrash.ThriftMeta do
     x
     |> last_part_of_atom_as_string
     |> String.to_atom
-  end
-
-  defp read_record_names(header_file) do
-    Record.extract_all(from: header_file) |> Dict.keys
   end
 
   defp ok_if_not_empty(m) when m == %{}, do: {:error, %{}}

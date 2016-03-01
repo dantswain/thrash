@@ -14,7 +14,7 @@ defmodule Thrash.EnumeratedTest do
 
   # using a different module name
   defmodule TacoVariety do
-    use Thrash.Enumerated, TacoType
+    use Thrash.Enumerated, source: TacoType
   end
 
   test "manual module name works" do

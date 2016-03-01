@@ -18,10 +18,10 @@ defmodule Thrash.Enumerated do
 
   As long as the name of your module ends with 'StatusCodes', Thrash
   should find the enumerated values automatically.  You can manually
-  override the name of the enum by passing it to the `use` call:
+  override the name of the source enum by passing it to the `use` call:
 
     defmodule MyApp.Codes do
-      use Thrash.Enumerated, StatusCodes
+      use Thrash.Enumerated, source: StatusCodes
     end
   """
 
@@ -29,8 +29,9 @@ defmodule Thrash.Enumerated do
   alias Thrash.MacroHelpers
 
   # there is probably a more idiomatic way to do a lot of this..
-  defmacro __using__(override_module) do
-    module = MacroHelpers.determine_module_name(override_module, __CALLER__)
+  defmacro __using__(opts) do
+    source_module = Keyword.get(opts, :source)
+    module = MacroHelpers.determine_module_name(source_module, __CALLER__)
     build_enumerated(module)
   end
 

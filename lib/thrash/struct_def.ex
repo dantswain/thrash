@@ -29,6 +29,14 @@ defmodule Thrash.StructDef do
     end)
   end
 
+  def override_defaults(fields, overrides) do
+    Enum.reduce(overrides, fields, fn({k, v}, fields) ->
+      Enum.map(fields, fn(field) ->
+        maybe_set_field_default(field, k, v)
+      end)
+    end)
+  end
+
   defp maybe_do({:ok, x}, f) do
     {:ok, f.(x)}
   end
@@ -53,4 +61,13 @@ defmodule Thrash.StructDef do
 
   defp undefined_to_nil(:undefined), do: nil
   defp undefined_to_nil(x), do: x
+
+  defp maybe_set_field_default(field = %Field{name: field_name},
+                               field_name,
+                               default) do
+    %{field | default: default}
+  end
+  defp maybe_set_field_default(field, _field_name, _default) do
+    field
+  end
 end

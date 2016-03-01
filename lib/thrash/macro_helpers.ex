@@ -3,7 +3,7 @@ defmodule Thrash.MacroHelpers do
   Functions that are helpful for working with macros
   """
 
-  def determine_module_name([], caller) do
+  def determine_module_name(nil, caller) do
     get_caller_module_name(caller)
   end
   def determine_module_name({_, _, [module]}, _) do

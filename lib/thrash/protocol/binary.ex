@@ -3,10 +3,14 @@ defmodule Thrash.Protocol.Binary do
   alias Thrash.MacroHelpers
   alias Thrash.ThriftMeta
 
-  defmacro __using__(override_module) do
-    modulename = MacroHelpers.determine_module_name(override_module, __CALLER__)
+  defmacro __using__(opts) do
+    source_module = Keyword.get(opts, :source)
+    defaults = Keyword.get(opts, :defaults, [])
+    modulename = MacroHelpers.determine_module_name(source_module, __CALLER__)
     quote do
-      defstruct(Thrash.StructDef.to_defstruct(Thrash.Protocol.Binary.find_in_thrift(unquote(modulename))))
+      defstruct(Thrash.Protocol.Binary.find_in_thrift(unquote(modulename))
+                |> Thrash.StructDef.override_defaults(unquote(defaults))
+                |> Thrash.StructDef.to_defstruct)
     end
   end
 

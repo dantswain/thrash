@@ -10,7 +10,7 @@ defmodule SubStruct do
 end
 
 defmodule SimpleStruct do
-  use Thrash.Protocol.Binary
+  use Thrash.Protocol.Binary, defaults: [taco_pref: :chicken]
 #  defstruct(Thrash.read_struct_def(:thrash_test_types,
 #                                   :'SimpleStruct',
 #                                   taco_pref: :chicken))

@@ -1,6 +1,10 @@
 defmodule Thrash.StructDef do
   defmodule Field do
     defstruct(id: nil, required: nil, type: nil, name: nil, default: nil)
+
+    def finalizer do
+      %Field{name: :final}
+    end
   end
 
   def read(modulename, struct_name) do
@@ -37,6 +41,14 @@ defmodule Thrash.StructDef do
     end)
   end
 
+  def override_types(fields, overrides) do
+    Enum.reduce(overrides, fields, fn({k, v}, fields) ->
+      Enum.map(fields, fn(field) ->
+        maybe_set_field_type(field, k, v)
+      end)
+    end)
+  end
+
   defp maybe_do({:ok, x}, f) do
     {:ok, f.(x)}
   end
@@ -68,6 +80,15 @@ defmodule Thrash.StructDef do
     %{field | default: default}
   end
   defp maybe_set_field_default(field, _field_name, _default) do
+    field
+  end
+
+  defp maybe_set_field_type(field = %Field{name: field_name},
+                            field_name,
+                            type) do
+    %{field | type: type}
+  end
+  defp maybe_set_field_type(field, _field_name, _type) do
     field
   end
 end

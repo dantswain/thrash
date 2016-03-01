@@ -4,19 +4,9 @@ end
 
 defmodule SubStruct do
   use Thrash.Protocol.Binary
-
-  require Thrash.Protocol.Binary
-  Thrash.Protocol.Binary.generate(:thrash_test_types, :'SubStruct')
 end
 
 defmodule SimpleStruct do
-  use Thrash.Protocol.Binary, defaults: [taco_pref: :chicken]
-#  defstruct(Thrash.read_struct_def(:thrash_test_types,
-#                                   :'SimpleStruct',
-#                                   taco_pref: :chicken))
-
-  require Thrash.Protocol.Binary
-  Thrash.Protocol.Binary.generate(:thrash_test_types,
-                                  :'SimpleStruct',
-                                  taco_pref: {:enum, TacoType})
+  use Thrash.Protocol.Binary, defaults: [taco_pref: :chicken],
+                              types: [taco_pref: {:enum, TacoType}]
 end

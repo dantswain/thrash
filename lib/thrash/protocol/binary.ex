@@ -6,12 +6,17 @@ defmodule Thrash.Protocol.Binary do
   defmacro __using__(opts) do
     source_module = Keyword.get(opts, :source)
     defaults = Keyword.get(opts, :defaults, [])
+    types = Keyword.get(opts, :types, [])
     modulename = MacroHelpers.determine_module_name(source_module, __CALLER__)
-    quote do
-      defstruct(Thrash.Protocol.Binary.find_in_thrift(unquote(modulename))
-                |> Thrash.StructDef.override_defaults(unquote(defaults))
-                |> Thrash.StructDef.to_defstruct)
-    end
+
+    thrift_def = find_in_thrift(modulename)
+    |> Thrash.StructDef.override_types(types)
+
+    [generate_struct(modulename, defaults)] ++
+      [generate_serialize()] ++
+      [generate_deserialize()] ++
+      generate_field_serializers(thrift_def) ++
+      generate_field_deserializers(thrift_def)
   end
 
   def find_in_thrift(modulename) do
@@ -34,6 +39,14 @@ defmodule Thrash.Protocol.Binary do
   def byte_to_bool(1), do: true
   def byte_to_bool(0), do: false
 
+  defp generate_struct(modulename, defaults) do
+    quote do
+      defstruct(Thrash.Protocol.Binary.find_in_thrift(unquote(modulename))
+                |> Thrash.StructDef.override_defaults(unquote(defaults))
+                |> Thrash.StructDef.to_defstruct)
+    end
+  end
+
   defp generate_serialize() do
     quote do
       def serialize(val) do
@@ -43,12 +56,8 @@ defmodule Thrash.Protocol.Binary do
   end
 
   defp generate_field_serializers(thrift_def) do
-    Enum.with_index(thrift_def ++ [final: nil])
-    |> Enum.map(fn({{k, v}, ix}) ->
-      type = v
-      varname = k
-      serializer(type, varname, ix)
-    end)
+    Enum.with_index(thrift_def ++ [Thrash.StructDef.Field.finalizer])
+    |> Enum.map(fn({field, ix}) -> serializer(field.type, field.name, ix) end)
   end
 
   defp generate_deserialize() do
@@ -60,12 +69,8 @@ defmodule Thrash.Protocol.Binary do
   end
 
   defp generate_field_deserializers(thrift_def) do
-    Enum.with_index(thrift_def ++ [final: nil])
-    |> Enum.map(fn({{k, v}, ix}) ->
-      type = v
-      varname = k
-      deserializer(type, varname, ix)
-    end)
+    Enum.with_index(thrift_def ++ [Thrash.StructDef.Field.finalizer])
+    |> Enum.map(fn({field, ix}) -> deserializer(field.type, field.name, ix) end)
   end
 
   defp header(type, ix) do

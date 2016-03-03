@@ -53,8 +53,9 @@ defmodule Thrash.ThriftMeta do
   def read_struct(header_file, struct_name) do
     basename = Path.basename(header_file, ".hrl")
     modulename = String.to_atom(basename)
+    {namespace, struct_name} = Thrash.MacroHelpers.find_namespace(struct_name)
     struct_name = last_part_of_atom_as_atom(struct_name)
-    Thrash.StructDef.read(modulename, struct_name)
+    Thrash.StructDef.read(modulename, struct_name, namespace)
   end
 
   @doc """

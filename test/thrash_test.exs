@@ -1,6 +1,7 @@
 defmodule ThrashTest do
   use ExUnit.Case
   doctest Thrash
+  doctest Thrash.MacroHelpers
 
   test "reading thrift info from the thrift-generated erlang files" do
     expected = [

@@ -68,7 +68,7 @@ defmodule Thrash.Protocol.Binary do
     thrift_def = Thrash.StructDef.find_in_thrift(modulename)
     |> Thrash.StructDef.override_types(types)
 
-    [generate_struct(modulename, defaults)] ++
+    [generate_struct(modulename, types, defaults)] ++
       [generate_serialize()] ++
       [generate_deserialize()] ++
       generate_field_serializers(thrift_def) ++
@@ -81,9 +81,10 @@ defmodule Thrash.Protocol.Binary do
   def byte_to_bool(1), do: true
   def byte_to_bool(0), do: false
 
-  defp generate_struct(modulename, defaults) do
+  defp generate_struct(modulename, types, defaults) do
     quote do
       defstruct(Thrash.StructDef.find_in_thrift(unquote(modulename))
+                |> Thrash.StructDef.override_types(unquote(types))
                 |> Thrash.StructDef.override_defaults(unquote(defaults))
                 |> Thrash.StructDef.to_defstruct)
     end

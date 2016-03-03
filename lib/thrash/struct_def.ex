@@ -15,23 +15,23 @@ defmodule Thrash.StructDef do
     end, :struct_not_found)
   end
 
-  def read(modulename, struct_name) do
+  def read(modulename, struct_name, namespace) do
     try do
       {:ok, modulename.struct_info_ext(struct_name)}
     rescue
       _e in FunctionClauseError ->
         {:error, []}
     end
-    |> maybe_do(fn(struct_info) -> from_struct_info(struct_info) end)
+    |> maybe_do(fn(struct_info) -> from_struct_info(namespace, struct_info) end)
   end
 
-  def from_struct_info({:struct, fields}) do
+  def from_struct_info(namespace, {:struct, fields}) do
     Enum.map(fields, fn({id, required, type, name, default}) ->
       %Field{id: id,
              required: undefined_to_nil(required),
-             type: translate_type(type),
+             type: translate_type(type, namespace),
              name: name,
-             default: translate_default(type, default)}
+             default: translate_default(type, default, namespace)}
     end)
   end
 
@@ -62,22 +62,22 @@ defmodule Thrash.StructDef do
   end
   defp maybe_do({:error, x}, _f), do: {:error, x}
 
-  defp translate_type({:struct, {_from_mod, struct_module}}) do
-    {:struct, Thrash.MacroHelpers.atom_to_elixir_module(struct_module)}
+  defp translate_type({:struct, {_from_mod, struct_module}}, namespace) do
+    {:struct, Thrash.MacroHelpers.atom_to_elixir_module(struct_module, namespace)}
   end
-  defp translate_type({:list, of_type}) do
-    {:list, translate_type(of_type)}
+  defp translate_type({:list, of_type}, namespace) do
+    {:list, translate_type(of_type, namespace)}
   end
-  defp translate_type(other_type), do: other_type
+  defp translate_type(other_type, _namespace), do: other_type
 
-  defp translate_default({:struct, {_namespace, struct_module}}, _) do
-    struct_module = Thrash.MacroHelpers.atom_to_elixir_module(struct_module)
+  defp translate_default({:struct, {_thrift_namespace, struct_module}}, _, namespace) do
+    struct_module = Thrash.MacroHelpers.atom_to_elixir_module(struct_module, namespace)
     struct_module.__struct__
   end
-  defp translate_default(:bool, :undefined), do: false
-  defp translate_default({:list, _}, :undefined), do: []
-  defp translate_default(_, :undefined), do: nil
-  defp translate_default(_, default), do: default
+  defp translate_default(:bool, :undefined, _namespace), do: false
+  defp translate_default({:list, _}, :undefined, _namespace), do: []
+  defp translate_default(_, :undefined, _namespace), do: nil
+  defp translate_default(_, default, _namespace), do: default
 
   defp undefined_to_nil(:undefined), do: nil
   defp undefined_to_nil(x), do: x

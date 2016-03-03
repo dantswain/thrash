@@ -1,4 +1,61 @@
 defmodule Thrash.Protocol.Binary do
+  @moduledoc """
+  Generates a struct and serialization/deserialization code for use
+  with the Thrift binary protocol.
+
+  Suppose you have a Thrift file with a struct:
+
+    // in thrift file
+    struct MyStruct {
+      1: i32 id,
+      2: string name
+    }
+
+  Create a module with a name that ends with `MyStruct` and `use` this
+  module to generate a struct, a serializer, and a deserializer.
+
+    defmodule MyApp.MyStruct do
+      use Thrash.Protocol.Binary
+    end
+
+  This generates a `%MyApp.MyStruct{id: nil, name: nil}` struct and
+  `MyApp.MyStruct.serialize/1` and `MyApp.MyStruct.deserialize/1`
+  functions.  The type signatures of these functions are as follows.
+
+    @spec serialize(%MyApp.MyStruct{}) :: binary
+    @spec deserialize(binary) :: {%MyApp.MyStruct{}, binary}
+
+  The second output argument of `deserialize/1` is any part of the
+  input string that is left over after deserialization.
+
+  Note that Thrash will use the last part of the module name to search
+  for a matching struct in the Thrift IDL.  I.e., `MyApp.MyStruct`,
+  `MyApp.Foo.MyStruct` and `MyStruct` modules will all match a Thrift
+  struct called `MyStruct`.  To manually specify a source struct, use
+  the `:source` option described below.
+
+  The `use` macro accepts a keyword list argument with the following
+  options.
+
+    * `:source` - Use this to manually specify a source struct in your
+       Thrift IDL.  The value should be an atom (Elixir module names
+       will work).
+    * `:defaults` - A keyword list specifying the default value overrides for
+       struct fields.  The key is a field name atom and the value will
+       be used as a default for that struct field.  If no default is
+       specified in the Thrift IDL or
+       via the `:defaults` option, the default struct value will be
+       `nil` for scalar fields, `[]` for lists, and an empty struct
+       of the appropriate type for struct fields.
+    * `:types` - A keyword list specifying type overrides.  For the
+       most part, Thrash should automatically detect types from the
+       Thrift IDL.  One special case is enum values, which are
+       specified in the generated Erlang code as 32-bit integers -
+       thus, it is necessary to manually specify Enumerated values if
+       you wish to use Thrash.Enumerated with them to get
+       atoms for values rather than integers.
+  """
+
   alias Thrash.Type
   alias Thrash.MacroHelpers
   alias Thrash.ThriftMeta

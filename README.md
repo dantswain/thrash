@@ -21,15 +21,90 @@ extraction.
 
 Thrash is geared towards use cases where Thrift is being used
 primarily as a message format specification, as opposed to a service
-platform.  That is, Thrash does not currently provide an
-implementation of Thrift Server and may not plug easily into an
-existing Thrift service without a server adapter.  On the other hand,
-if you are using Thrift as a message specification within your own
-services, Thrash can provide a significant speedup.
+platform.  Thrash does not currently provide an implementation of
+Thrift Server and may not plug easily into an existing Thrift service
+without a server adapter.  On the other hand, if you are using Thrift
+as a message specification within your own services, Thrash can
+provide a significant speedup.
 
 It should be possible to extend Thrash to plug into Thrift services
 (i.e., provide a Thrift Server implementation).  I simply haven't put
 any effort into implementing that because it doesn't fit my use case.
+
+## Usage
+
+Suppose we have a thrift file containing the following (taken from
+[test/thrash_test.thrift](test/thrash_test.thrift)).
+
+    namespace erl thrash
+    
+    enum TacoType {
+      BARBACOA = 123,
+      CARNITAS = 124,
+      STEAK = 125,
+      CHICKEN = 126,
+      PASTOR = 127
+    }
+    
+    struct SubStruct {
+      1: i32 sub_id
+      2: string sub_name
+    }
+    
+    struct SimpleStruct {
+      1: i32 id
+      2: string name
+      3: list<i32> list_of_ints
+      4: i64 bigint
+      5: SubStruct sub_struct
+      6: bool flag
+      7: double floatval
+      8: TacoType taco_pref
+      9: list<SubStruct> list_of_structs
+    }
+
+First, generate the Erlang thrift code.
+
+    thrift -o src --gen erl test/thrash_test.thrift
+
+This should place .erl and .hrl files the src/gen-erl directory.
+
+Next, create Elixir modules to encapsulate these data structures and
+`use` the proper Thrash mixins to automatically generate code at
+compile-time (taken from
+[test/simple_struct.ex](test/simple_struct.ex)).
+
+    defmodule TacoType do
+      use Thrash.Enumerated
+    end
+    
+    defmodule SubStruct do
+      use Thrash.Protocol.Binary
+    end
+    
+    defmodule SimpleStruct do
+      use Thrash.Protocol.Binary, defaults: [taco_pref: :chicken],
+                                  types: [taco_pref: {:enum, TacoType}]
+    end
+
+You can then do things like the following.
+
+    # construct a struct - note we can use an atom for the enum
+    iex> simple_struct = %SimpleStruct{id: 42, name: "my thing", list_of_ints: [1, 2, 5], taco_pref: :carnitas}
+    %SimpleStruct{bigint: nil, flag: false, floatval: nil, id: 42, list_of_ints: [1, 2, 5], list_of_structs: [], name: "my thing", sub_struct: %SubStruct{sub_id: nil, sub_name: nil}, taco_pref: :carnitas}
+
+    # serialize to binary
+    iex> b = SimpleStruct.serialize(simple_struct)
+    <<8, 0, 1, 0, 0, 0, 42, 11, 0, 2, 0, 0, 0, 8, 109, 121, 32, 116, 104, 105, 110, 103, 15, 0, 3, 8, 0, 0, 0, 3, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0, 5, 2, 0, 6, 0, 8, 0, 8, 0, ...>>
+
+    # deserialize - note we get back the atom value for the enum field
+    iex> {simple_struct_deserialized, _remainder} = SimpleStruct.deserialize(b)
+    {%SimpleStruct{bigint: nil, flag: false, floatval: nil, id: 42, list_of_ints: [1, 2, 5], list_of_structs: [], name: "my thing", sub_struct: %SubStruct{sub_id: nil, sub_name: nil}, taco_pref: :carnitas}, ""}
+
+See the moduledocs for `Thrash.Enumerated` and `Thrash.Protocol.Binary` for
+usage details.  Note, both of these mixins accept a `source` argument
+to allow you to manually define the source structure in your Thrift
+IDL.
 
 ## Status
 
@@ -52,10 +127,6 @@ implementing the functionality that I need.
 * There is no implementation here for services or servers.  It should
   be possible to build something like that using Thrash.  Pull
   requests are welcomed.
-
-* The code is currently very much a mess and needs to be
-  refactored/cleaned up.  I've been focused on implementing the
-  features I need and will revisit this soon.
 
 ## Benchmarks
 

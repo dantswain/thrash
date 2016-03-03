@@ -7,6 +7,14 @@ defmodule Thrash.StructDef do
     end
   end
 
+  alias Thrash.ThriftMeta
+
+  def find_in_thrift(modulename) do
+    ThriftMeta.find_in_thrift(fn(h) ->
+      ThriftMeta.read_struct(h, modulename)
+    end, :struct_not_found)
+  end
+
   def read(modulename, struct_name) do
     try do
       {:ok, modulename.struct_info_ext(struct_name)}

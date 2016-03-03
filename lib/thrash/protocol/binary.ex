@@ -58,7 +58,6 @@ defmodule Thrash.Protocol.Binary do
 
   alias Thrash.Type
   alias Thrash.MacroHelpers
-  alias Thrash.ThriftMeta
 
   defmacro __using__(opts) do
     source_module = Keyword.get(opts, :source)
@@ -66,27 +65,13 @@ defmodule Thrash.Protocol.Binary do
     types = Keyword.get(opts, :types, [])
     modulename = MacroHelpers.determine_module_name(source_module, __CALLER__)
 
-    thrift_def = find_in_thrift(modulename)
+    thrift_def = Thrash.StructDef.find_in_thrift(modulename)
     |> Thrash.StructDef.override_types(types)
 
     [generate_struct(modulename, defaults)] ++
       [generate_serialize()] ++
       [generate_deserialize()] ++
       generate_field_serializers(thrift_def) ++
-      generate_field_deserializers(thrift_def)
-  end
-
-  def find_in_thrift(modulename) do
-    ThriftMeta.find_in_thrift(fn(h) ->
-      ThriftMeta.read_struct(h, modulename)
-    end, :struct_not_found)
-  end
-
-  defmacro generate(module, struct, overrides \\ []) do
-    thrift_def = Thrash.read_thrift_def(module, struct, overrides)
-    [generate_serialize()] ++
-      generate_field_serializers(thrift_def) ++
-      [generate_deserialize()] ++
       generate_field_deserializers(thrift_def)
   end
 
@@ -98,7 +83,7 @@ defmodule Thrash.Protocol.Binary do
 
   defp generate_struct(modulename, defaults) do
     quote do
-      defstruct(Thrash.Protocol.Binary.find_in_thrift(unquote(modulename))
+      defstruct(Thrash.StructDef.find_in_thrift(unquote(modulename))
                 |> Thrash.StructDef.override_defaults(unquote(defaults))
                 |> Thrash.StructDef.to_defstruct)
     end

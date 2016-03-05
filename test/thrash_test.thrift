@@ -1,5 +1,7 @@
 namespace erl thrash
 
+const i32 MAX_THINGS = 42
+
 enum TacoType {
   BARBACOA = 123,
   CARNITAS = 124,

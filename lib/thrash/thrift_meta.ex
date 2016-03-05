@@ -29,6 +29,17 @@ defmodule Thrash.ThriftMeta do
   end
 
   @doc """
+  Returns a list of erlang header files matching *_types.hrl in any
+  subdirectory of root_path (usually erl_gen_path/0).
+  """
+  @spec constants_headers(String.t) :: [String.t]
+  def constants_headers(root_path) do
+    root_path
+    |> Path.join("**/*_constants.hrl")
+    |> Path.wildcard
+  end
+
+  @doc """
   Read the `-define`d constants from a thrift-generated header file.
 
   Mostly a passthrough to Quaff.Constants.get_constants, but strips
@@ -42,6 +53,36 @@ defmodule Thrash.ThriftMeta do
     Quaff.Constants.get_constants(header_file, [])
     |> Enum.filter(fn({k, _v}) ->
       !Enum.member?(meta_constants, k)
+    end)
+  end
+
+  @doc """
+  Read constants from a header file, exclude constants from included headers
+  """
+  @spec read_constants_exclusive(String.t) :: Keyword.t
+  def read_constants_exclusive(header_file) do
+    constants = read_constants(header_file)
+    |> Enum.into(MapSet.new)
+
+    included = determine_included_libs(constants, header_file)
+    included_constants = Enum.map(included,
+      fn(incl) -> read_constants(incl) end)
+    |> List.flatten
+    |> Enum.uniq
+    |> Enum.into(MapSet.new)
+
+    MapSet.difference(constants, included_constants)
+    |> Enum.into([])
+    |> Enum.filter(&is_not_included_lib?/1)
+  end
+
+  def determine_included_libs(constants, header_file) do
+    dir = Path.dirname(header_file)
+    Enum.filter(constants, fn({constant, value}) ->
+      is_included_lib?({constant, value})
+    end)
+    |> Enum.map(fn({k, _v}) ->
+      included_tag_to_header(k, dir)
     end)
   end
 
@@ -128,4 +169,21 @@ defmodule Thrash.ThriftMeta do
 
   defp ok_if_not_empty(m) when m == %{}, do: {:error, %{}}
   defp ok_if_not_empty(m) when is_map(m), do: {:ok, m}
+
+  defp is_included_lib?({k, :yeah}) do
+    # with a value of :yeah, it's probably an included tag
+    # but we should be careful
+    String.match?(Atom.to_string(k), ~r/^_.*_included$/)
+  end
+  defp is_included_lib?({_k, _v}), do: false
+
+  defp is_not_included_lib?(x) do
+    !is_included_lib?(x)
+  end
+
+  defp included_tag_to_header(tag, dir) do
+    Atom.to_string(tag)
+    |> String.replace(~r/^_(.*)_included$/, "\\1")
+    |> (&(Path.join(dir, &1 <> ".hrl"))).()
+  end
 end

@@ -12,6 +12,17 @@ defmodule Thrash.ThriftMetaTest do
       Thrash.ThriftMeta.types_headers(Thrash.ThriftMeta.erl_gen_path())
   end
 
+  test "constants_headers works" do
+    assert [Path.join(@gen_erl, "thrash_test_constants.hrl")] ==
+      Thrash.ThriftMeta.constants_headers(Thrash.ThriftMeta.erl_gen_path())
+  end
+
+  test "reading exclusive constants" do
+    path = Path.join(@gen_erl, "thrash_test_constants.hrl")
+    assert [THRASH_TEST_MAX_THINGS: 42] ==
+      Thrash.ThriftMeta.read_constants_exclusive(path)
+  end
+
   test "read_constants works" do
     [header] = Thrash.ThriftMeta.types_headers(Thrash.ThriftMeta.erl_gen_path())
 

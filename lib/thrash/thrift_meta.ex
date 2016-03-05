@@ -40,6 +40,18 @@ defmodule Thrash.ThriftMeta do
   end
 
   @doc """
+  Determine namespace from constants header file name
+
+  e.g., "gen-erl/foo_constants.hrl" -> "FOO_"
+  """
+  @spec constants_namespace(String.t) :: String.t
+  def constants_namespace(header) do
+    Path.basename(header, ".hrl")
+    |> String.replace(~r/constants$/, "")
+    |> String.upcase
+  end
+
+  @doc """
   Read the `-define`d constants from a thrift-generated header file.
 
   Mostly a passthrough to Quaff.Constants.get_constants, but strips
@@ -54,6 +66,16 @@ defmodule Thrash.ThriftMeta do
     |> Enum.filter(fn({k, _v}) ->
       !Enum.member?(meta_constants, k)
     end)
+  end
+
+  @doc """
+  Convert Thrift constant names to Elixir-friendly names
+
+  e.g., `[FOO_THING: 42], "FOO_"` -> `[thing: 42]`
+  """
+  @spec thrashify_constants(Keyword.t, String.t) :: Keyword.t
+  def thrashify_constants(constants, namespace) do
+    Enum.map(constants, fn({k, v}) -> {thrift_to_thrash_const(k, namespace), v} end)
   end
 
   @doc """

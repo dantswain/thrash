@@ -39,6 +39,8 @@ Suppose we have a thrift file containing the following (taken from
 [test/thrash_test.thrift](test/thrash_test.thrift)).
 
     namespace erl thrash
+
+    const i32 MAX_THINGS = 42
     
     enum TacoType {
       BARBACOA = 123,
@@ -89,6 +91,10 @@ compile-time (taken from
                                   types: [taco_pref: {:enum, TacoType}]
     end
 
+    defmodule Constants do
+      use Thrash.Constants
+    end
+
 You can then do things like the following.
 
     # construct a struct - note we can use an atom for the enum
@@ -102,6 +108,10 @@ You can then do things like the following.
     # deserialize - note we get back the atom value for the enum field
     iex> {simple_struct_deserialized, _remainder} = SimpleStruct.deserialize(b)
     {%SimpleStruct{bigint: nil, flag: false, floatval: nil, id: 42, list_of_ints: [1, 2, 5], list_of_structs: [], name: "my thing", sub_struct: %SubStruct{sub_id: nil, sub_name: nil}, taco_pref: :carnitas}, ""}
+
+    # pulled in constants
+    iex(1)> Constants.max_things
+    42
 
 See the moduledocs for `Thrash.Enumerated` and `Thrash.Protocol.Binary` for
 usage details.  Note, both of these mixins accept a `source` argument

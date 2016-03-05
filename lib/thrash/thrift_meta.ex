@@ -1,4 +1,8 @@
 defmodule Thrash.ThriftMeta do
+  @moduledoc """
+  Functions to access metadata from the Thrift-generated Erlang code
+  """
+
   @type finder :: ((String.t) -> {:ok, term} | {:error, term})
 
   @doc """

@@ -5,6 +5,10 @@ defmodule Thrash.StructDef do
   """
 
   defmodule Field do
+    @moduledoc """
+    Metadata about a struct field
+    """
+
     defstruct(id: nil, required: nil, type: nil, name: nil, default: nil)
 
     def finalizer do

@@ -19,7 +19,7 @@ defmodule Thrash.Mixfile do
     [applications: [:logger]]
   end
 
-  def elixirc_paths(:dev), do: ["lib", "bench"]
+  def elixirc_paths(:bench), do: ["lib", "bench"]
   def elixirc_paths(:test), do: ["lib", "test"]
   def elixirc_paths(_), do: ["lib"]
 
@@ -35,7 +35,9 @@ defmodule Thrash.Mixfile do
   defp deps do
     [{:thrift_ex, github: "dantswain/thrift_ex"},
      {:quaff, github: "qhool/quaff"},
-     {:exprof, "~>0.2", only: :dev},
-     {:benchwarmer, "~>0.0.2", only: :dev}]
+     {:earmark, "~> 0.1", only: :dev},
+     {:ex_doc, "~> 0.11", only: :dev},
+     {:exprof, "~>0.2", only: :bench},
+     {:benchwarmer, "~>0.0.2", only: :bench}]
   end
 end

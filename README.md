@@ -171,22 +171,11 @@ According to these results, Thrash is about 5x faster for
 serialization and about 18x faster for deserialization compared to the
 official Erlang library.
 
-## Usage
+## Development & Contribution
 
-Since this is still very much work in progress, I have not published
-anything to Hex and it doesn't make sense to write up careful usage
-instructions when that could change with the next commit.  If you want
-to pull down this repository and poke around, check out
-`test/simple_struct.ex` to see how the API is currently being
-used.
+If you want to pull down this repository and poke around, check out
+[test/simple_struct.ex](test/simple_struct.ex) and
+[test/namespaced](test/namespaced/simple_struct.ex) to see how the API
+is currently being used.
 
-To build and run local development, you need to generate the ThriftEx
-code for `test/thrash_test.exs` (used for benchmarking).  This should
-be a matter of doing
-
-```
-mix deps.get
-mix deps.compile
-mix thrift --thrift-dir test/
-mix compile
-```
+Standard Elixir and Github workflows apply here.  Pull requests are welcome.

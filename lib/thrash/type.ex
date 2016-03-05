@@ -1,4 +1,26 @@
 defmodule Thrash.Type do
+  @moduledoc """
+  Translation of type specifiers to Thrift type ids
+  """
+
+  @type type_specifier :: :bool |
+                          :double |
+                          :i32 |
+                          :enum |
+                          {:enum, term} |
+                          :i64 |
+                          :string |
+                          :struct |
+                          {:struct, term} |
+                          :list |
+                          {:list, term}
+
+  @doc """
+  Return the Thrift type id of a type specifier
+
+  See [thrift_constants.hrl](https://github.com/apache/thrift/blob/6ec6860801bdc87236e636add071c4faa2ac7e4b/lib/erl/include/thrift_constants.hrl#L21)
+  """
+  @spec id(type_specifier) :: non_neg_integer
   def id(:bool), do: 2
   def id(:double), do: 4
   def id(:i32), do: 8

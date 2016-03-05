@@ -1,6 +1,5 @@
 language: elixir
 elixir:
-  - 1.2.3
   - 1.1.1
 sudo: true
 before_script:
@@ -8,5 +7,5 @@ before_script:
   - sudo apt-get install libboost-dev libboost-test-dev libboost-program-options-dev libevent-dev automake libtool flex bison pkg-config g++ libssl-dev
   - wget http://www.us.apache.org/dist/thrift/0.9.3/thrift-0.9.3.tar.gz
   - tar xfz thrift-0.9.3.tar.gz
-  - cd thrift-0.9.3 && ./configure && sudo make install
+  - cd thrift-0.9.3 && ./configure --without-java --without-ruby --without-python --without-go --without-nodejs && sudo make install
   - thrift -o src --gen erl test/thrash_test.thrift

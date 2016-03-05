@@ -2,7 +2,7 @@ language: elixir
 elixir:
   - 1.2.3
   - 1.1.1
-sudo: false
+sudo: true
 before_script:
   - sudo apt-get update -qq
   - sudo apt-get install libboost-dev libboost-test-dev libboost-program-options-dev libevent-dev automake libtool flex bison pkg-config g++ libssl-dev

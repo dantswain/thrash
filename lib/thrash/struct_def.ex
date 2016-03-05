@@ -37,7 +37,7 @@ defmodule Thrash.StructDef do
 
   def to_defstruct(fields) do
     Enum.map(fields, fn(field) ->
-      {field.name, field.default}
+      {field.name, collapse_deferred_defaults(field.default)}
     end)
   end
 
@@ -72,7 +72,7 @@ defmodule Thrash.StructDef do
 
   defp translate_default({:struct, {_thrift_namespace, struct_module}}, _, namespace) do
     struct_module = Thrash.MacroHelpers.atom_to_elixir_module(struct_module, namespace)
-    struct_module.__struct__
+    {:defer_struct, struct_module}
   end
   defp translate_default(:bool, :undefined, _namespace), do: false
   defp translate_default({:list, _}, :undefined, _namespace), do: []
@@ -98,5 +98,12 @@ defmodule Thrash.StructDef do
   end
   defp maybe_set_field_type(field, _field_name, _type) do
     field
+  end
+
+  defp collapse_deferred_defaults({:defer_struct, struct_module}) do
+    struct_module.__struct__
+  end
+  defp collapse_deferred_defaults(default) do
+    default
   end
 end

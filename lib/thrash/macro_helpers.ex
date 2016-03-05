@@ -69,8 +69,8 @@ defmodule Thrash.MacroHelpers do
     |> Enum.map(&String.to_atom/1)
 
     case parts do
-      [modulename] -> nil
-      [modulename, namespace] -> namespace
+      [_modulename] -> nil
+      [_modulename, namespace] -> namespace
     end
   end
 

@@ -12,7 +12,8 @@ defmodule Bench do
                                 defaults: [taco_pref: :chicken,
                                            sub_struct: %Bench.TestSubStruct{}],
                                 types: [taco_pref: {:enum, TacoType},
-                                        sub_struct: {:struct, %Bench.TestSubStruct{}}]
+                                        sub_struct: {:struct, Bench.TestSubStruct},
+                                        list_of_structs: {:list, {:struct, Bench.TestSubStruct}}]
   end
 
   def bench_thrift_ex() do

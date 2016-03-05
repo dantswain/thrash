@@ -12,12 +12,7 @@ defmodule Thrash.EnumeratedTest do
     assert TacoType.atom(125) == :steak
   end
 
-  # using a different module name
-  defmodule TacoVariety do
-    use Thrash.Enumerated, source: TacoType
-  end
-
-  test "manual module name works" do
-    assert TacoVariety.id(:barbacoa) == 123
+  test "source module name works" do
+    assert TacoFlavor.id(:barbacoa) == 123
   end
 end

@@ -49,11 +49,10 @@ defmodule Thrash.ThriftMeta do
   removed from the struct_name before calling struct_info (e.g.,
   'Foo.Bar' -> 'Bar').
   """
-  @spec read_struct(String.t, atom) :: {:ok, Keyword.t} | {:error, []} 
-  def read_struct(header_file, struct_name) do
+  @spec read_struct(String.t, atom, atom) :: {:ok, Keyword.t} | {:error, []} 
+  def read_struct(header_file, struct_name, namespace) do
     basename = Path.basename(header_file, ".hrl")
     modulename = String.to_atom(basename)
-    {namespace, struct_name} = Thrash.MacroHelpers.find_namespace(struct_name)
     struct_name = last_part_of_atom_as_atom(struct_name)
     Thrash.StructDef.read(modulename, struct_name, namespace)
   end

@@ -4,27 +4,15 @@ defmodule Bench do
   end
 
   defmodule TestSubStruct do
-    defstruct(Thrash.read_struct_def(:thrash_test_types, :'SubStruct'))
-
-    require Thrash.Protocol.Binary
-    Thrash.Protocol.Binary.generate(:thrash_test_types, :'SubStruct')
+    use Thrash.Protocol.Binary, source: SubStruct
   end
 
   defmodule TestSimpleStruct do
-    defstruct(Thrash.read_struct_def(:thrash_test_types,
-                                     :'SimpleStruct',
-                                     [taco_pref: {:enum, TacoType},
-                                      sub_struct: {:struct, TestSubStruct},
-                                      list_of_structs: {:list, {:struct, TestSubStruct}}],
-                                     [taco_pref: :chicken,
-                                      sub_struct: %TestSubStruct{}]))
-
-    require Thrash.Protocol.Binary
-    Thrash.Protocol.Binary.generate(:thrash_test_types,
-                                    :'SimpleStruct',
-                                    taco_pref: {:enum, TacoType},
-                                    sub_struct: {:struct, TestSubStruct},
-                                    list_of_structs: {:list, {:struct, TestSubStruct}})
+    use Thrash.Protocol.Binary, source: SimpleStruct,
+                                defaults: [taco_pref: :chicken,
+                                           sub_struct: %Bench.TestSubStruct{}],
+                                types: [taco_pref: {:enum, TacoType},
+                                        sub_struct: {:struct, %Bench.TestSubStruct{}}]
   end
 
   def bench_thrift_ex() do

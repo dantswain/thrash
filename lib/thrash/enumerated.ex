@@ -31,7 +31,7 @@ defmodule Thrash.Enumerated do
   # there is probably a more idiomatic way to do a lot of this..
   defmacro __using__(opts) do
     source_module = Keyword.get(opts, :source)
-    module = MacroHelpers.determine_module_name(source_module, __CALLER__)
+    module = MacroHelpers.determine_module_name(source_module, __CALLER__.module)
     build_enumerated(module)
   end
 

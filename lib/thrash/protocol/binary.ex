@@ -63,12 +63,14 @@ defmodule Thrash.Protocol.Binary do
     source_module = Keyword.get(opts, :source)
     defaults = Keyword.get(opts, :defaults, [])
     types = Keyword.get(opts, :types, [])
-    modulename = MacroHelpers.determine_module_name(source_module, __CALLER__)
+    caller = __CALLER__.module
+    caller_namespace = MacroHelpers.find_namespace(caller)
+    modulename = MacroHelpers.determine_module_name(source_module, caller)
 
-    thrift_def = Thrash.StructDef.find_in_thrift(modulename)
+    thrift_def = Thrash.StructDef.find_in_thrift(modulename, caller_namespace)
     |> Thrash.StructDef.override_types(types)
 
-    [generate_struct(modulename, types, defaults)] ++
+    [generate_struct(modulename, types, defaults, caller_namespace)] ++
       [generate_serialize()] ++
       [generate_deserialize()] ++
       generate_field_serializers(thrift_def) ++
@@ -81,9 +83,9 @@ defmodule Thrash.Protocol.Binary do
   def byte_to_bool(1), do: true
   def byte_to_bool(0), do: false
 
-  defp generate_struct(modulename, types, defaults) do
+  defp generate_struct(modulename, types, defaults, caller_namespace) do
     quote do
-      defstruct(Thrash.StructDef.find_in_thrift(unquote(modulename))
+      defstruct(Thrash.StructDef.find_in_thrift(unquote(modulename), unquote(caller_namespace))
                 |> Thrash.StructDef.override_types(unquote(types))
                 |> Thrash.StructDef.override_defaults(unquote(defaults))
                 |> Thrash.StructDef.to_defstruct)

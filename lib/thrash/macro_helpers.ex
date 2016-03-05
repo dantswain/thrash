@@ -8,11 +8,11 @@ defmodule Thrash.MacroHelpers do
   @doc """
   Determine the caller module name with optional override.
 
-  Use with the `__CALLER__` macro as the second argument.
+  Use with the `__CALLER__.module` value as the second argument.
   """
-  @spec determine_module_name(nil | escaped_module_name, Macro.Env.t) :: atom
+  @spec determine_module_name(nil | escaped_module_name, atom) :: atom
   def determine_module_name(nil, caller) do
-    caller.module
+    caller
   end
   def determine_module_name({:__aliases__, _, [module]}, _) do
     module
@@ -50,13 +50,13 @@ defmodule Thrash.MacroHelpers do
 
   Examples:
       iex> Thrash.MacroHelpers.find_namespace(Foo)
-      {nil, Foo}
+      nil
 
       iex> Thrash.MacroHelpers.find_namespace(Foo.Bar)
-      {Foo, Bar}
+      Foo
 
       iex> Thrash.MacroHelpers.find_namespace(Foo.Bar.Baz)
-      {Foo.Bar, Baz}
+      Foo.Bar
   """
   @spec find_namespace(atom) :: {nil | atom, atom}
   def find_namespace(modulename) do
@@ -69,8 +69,8 @@ defmodule Thrash.MacroHelpers do
     |> Enum.map(&String.to_atom/1)
 
     case parts do
-      [modulename] -> {nil, modulename}
-      [modulename, namespace] -> {namespace, modulename}
+      [modulename] -> nil
+      [modulename, namespace] -> namespace
     end
   end
 

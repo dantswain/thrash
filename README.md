@@ -1,5 +1,7 @@
 # Thrash
 
+[![Build Status](https://travis-ci.org/dantswain/thrash.svg?branch=master)](https://travis-ci.org/dantswain/thrash)
+
 An Elixir library for serialization and deserialization of
 [Apache Thrift](https://thrift.apache.org/) messages. 🤘
 

@@ -16,7 +16,7 @@ defmodule Thrash.Mixfile do
   #
   # Type "mix help compile.app" for more information
   def application do
-    [applications: [:logger]]
+    [applications: [:logger, :quaff, :thrift_ex]]
   end
 
   def elixirc_paths(:bench), do: ["lib", "bench"]

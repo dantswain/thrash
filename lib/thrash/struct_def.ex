@@ -1,4 +1,9 @@
 defmodule Thrash.StructDef do
+  @moduledoc """
+  Thrash's translation layer between the Thrift IDL and the generated
+  Elixir code.
+  """
+
   defmodule Field do
     defstruct(id: nil, required: nil, type: nil, name: nil, default: nil)
 

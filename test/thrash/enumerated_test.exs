@@ -34,7 +34,7 @@ defmodule Thrash.EnumeratedTest do
   end
 
   test "defines a type for values" do
-    type = {:values_t,
+    type = {:value_t,
             {:type, 2, :union,
               Enum.map(TacoType.values, fn(t) -> {:integer, 0, t} end)},
             []}

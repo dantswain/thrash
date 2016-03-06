@@ -4,25 +4,45 @@ defmodule Thrash.Enumerated do
 
   Suppose you have thrift file with enumerated values:
 
-    // in thrift file
-    enum StatusCodes {
-      OK = 0
-      ERROR = 1
-    }
+      // in thrift file
+      enum StatusCodes {
+        OK = 0
+        ERROR = 1
+      }
 
   Bring these enumerated values into your Elixir app by doing
 
-    defmodule MyApp.StatusCodes do
-      use Thrash.Enumerated
-    end
+      defmodule MyApp.StatusCodes do
+        use Thrash.Enumerated
+      end
 
   As long as the name of your module ends with 'StatusCodes', Thrash
   should find the enumerated values automatically.  You can manually
   override the name of the source enum by passing it to the `use` call:
 
-    defmodule MyApp.Codes do
-      use Thrash.Enumerated, source: StatusCodes
-    end
+      defmodule MyApp.Codes do
+        use Thrash.Enumerated, source: StatusCodes
+      end
+
+  The generated code defines a mapping from the named values, as
+  atoms, to their corresponding integers:
+
+      StatusCode.id(:ok) = 0
+      StatusCode.atom(0) = :ok
+
+  Using this module defines the following functions:
+
+    * `map/0` - Returns the map from atom to value
+    * `reverse_map/0` - Returns the map from value to atom
+    * `atoms/0` - Returns the list of valid atom values
+    * `values/0` - Returns the list of valid integer values
+    * `id/1` - Returns the integer value for a given atom
+    * `atom/1` - Returns the atom value for a given integer
+  
+  The following types are defined:
+
+    * `atom_t/0` - Union of all valid atom values
+    * `value_t/0` - Union of all valid integer values
   """
 
   alias Thrash.ThriftMeta
@@ -35,7 +55,7 @@ defmodule Thrash.Enumerated do
     build_enumerated(module)
   end
 
-  def build_enumerated(module) do
+  defp build_enumerated(module) do
     # if you get ":enum_not_found" here, it indicates that the enum
     # you were looking for does not exist in the thrift-generated
     # erlang code
@@ -47,14 +67,46 @@ defmodule Thrash.Enumerated do
     values_type = MacroHelpers.quoted_chained_or(values)
 
     quote do
+      @typedoc "Valid atom values"
       @type atom_t :: unquote(atoms_type)
-      @type values_t :: unquote(values_type)
 
+      @typedoc "Valid integer values"
+      @type value_t :: unquote(values_type)
+
+      @doc """
+      Returns the map from valid atom values to integer values
+      """
+      @spec map() :: map
       def map(), do: unquote(map)
+
+      @doc """
+      Returns the reverse map from valid integer values to atom values
+      """
+      @spec reverse_map() :: map
       def reverse_map(), do: unquote(reversed)
-      def atoms, do: unquote(atoms)
-      def values, do: unquote(values)
+
+      @doc """
+      Returns the list of valid atom values
+      """
+      @spec atoms() :: [atom]
+      def atoms(), do: unquote(atoms)
+
+      @doc """
+      Returns the list of valid integer values
+      """
+      @spec values() :: [integer]
+      def values(), do: unquote(values)
+
+      @doc """
+      Returns the integer value corresponding to the given atom
+      """
+      @spec id(atom_t) :: value_t
       def id(atom), do: unquote(map)[atom]
+
+      @doc """
+      Returns the atom corresponding to the given integer value
+      """
+      @spec atom(value_t) :: atom_t
       def atom(id), do: unquote(reversed)[id]
     end
   end

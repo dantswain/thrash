@@ -74,6 +74,24 @@ defmodule Thrash.MacroHelpers do
     end
   end
 
+  @doc """
+  Create a quoted 'or' expression for an array of values.
+
+  Useful for generating typespecs, i.e., `:foo | :bar | :baz`
+
+  Examples:
+      iex> Thrash.MacroHelpers.quoted_chained_or([:a, :b])
+      quote do: :a | :b
+
+      iex> Thrash.MacroHelpers.quoted_chained_or([:a, :b, :c])
+      quote do: :a | :b | :c
+  """
+  def quoted_chained_or(values) when is_list(values) and length(values) > 1 do
+    values = Enum.reverse(values)
+    [a, b | rest] = values
+    quoted_chained_or(rest, {:|, [], [b, a]})
+  end
+
   defp moduleize("Elixir") do
     nil
   end
@@ -82,5 +100,12 @@ defmodule Thrash.MacroHelpers do
   end
   defp moduleize(string) do
     "Elixir." <> string
+  end
+
+  defp quoted_chained_or([], ast) do
+    ast
+  end
+  defp quoted_chained_or([h | rest], ast) do
+    quoted_chained_or(rest, {:|, [], [h, ast]})
   end
 end

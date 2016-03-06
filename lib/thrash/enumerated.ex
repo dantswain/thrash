@@ -40,11 +40,20 @@ defmodule Thrash.Enumerated do
     # you were looking for does not exist in the thrift-generated
     # erlang code
     map = find_in_thrift(module) |> ensure_quoted
+    atoms = get_keys(map)
+    values = get_values(map)
     reversed = build_reverse(map)
-    
+    atoms_type = MacroHelpers.quoted_chained_or(atoms)
+    values_type = MacroHelpers.quoted_chained_or(values)
+
     quote do
+      @type atom_t :: unquote(atoms_type)
+      @type values_t :: unquote(values_type)
+
       def map(), do: unquote(map)
       def reverse_map(), do: unquote(reversed)
+      def atoms, do: unquote(atoms)
+      def values, do: unquote(values)
       def id(atom), do: unquote(map)[atom]
       def atom(id), do: unquote(reversed)[id]
     end
@@ -67,5 +76,13 @@ defmodule Thrash.Enumerated do
 
   defp build_reverse({:%{}, line, kv}) do
     {:%{}, line, reverse_kv(kv)}
+  end
+
+  defp get_keys({:%{}, _line, kv}) do
+    Keyword.keys(kv)
+  end
+
+  defp get_values({:%{}, _line, kv}) do
+    Keyword.values(kv)
   end
 end

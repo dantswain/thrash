@@ -21,7 +21,7 @@ defmodule Mix.Tasks.Compile.Thrift do
       thrift: System.get_env("THRIFT") || "thrift",
       thrift_input_dir: System.get_env("THRIFT_INPUT_DIR") || "thrift",
       thrift_output_dir: System.get_env("THRIFT_OUTPUT_DIR") || "src",
-      force_thrift: force_thrift?(System.get_env("FORCE_THRIFT") || nil)
+      force_thrift: force_thrift?(System.get_env("FORCE_THRIFT") || false)
     }
   end
 

@@ -1,4 +1,51 @@
 defmodule Mix.Tasks.Compile.Thrift do
+  @moduledoc """
+  Provides a mix task for compiling Thrift IDL files to Erlang.
+
+  Once Thrash is
+  compiled, you can execute `mix compile.thrift` to generate Erlang code
+  (a required precursor for Thrash) from your Thrift IDL files (i.e.,
+  `.thrift` files).  By default, `mix compile.thrift` assumes that your
+  IDL files are in the `thrift` directory and that the output should go
+  in the `src` directory. 
+
+  The following environment variables modify the behavior of `mix
+  compile.thrift`.
+
+  * `THRIFT` - Path to the `thrift` binary (default: `thrift`).
+  * `THRIFT_INPUT_DIR` - Directory containing your `.thrift` files
+    (default: `thrift`).
+  * `THRIFT_OUTPUT_DIR` - Directory in which generated Erlang
+    source code is placed (default: `src`).
+  * `FORCE_THRIFT` - Set to any of `["TRUE", "true", "1"]` to force
+    execution of `thrift`.  By default, the task automatically determines
+    if it is necessary to execute `thrift` based on the mtimes of the
+    files in the input and output directories.
+
+  Prepend `:thrift` to the list of compilers in your project
+  and this task will run automatically as needed.
+
+  ```
+  defmodule MyProject.Mixfile do
+    use Mix.Project
+    
+    def project do
+      [app: :my_project,
+      # usual stuff ..
+
+      # prepend thrift to the usual list of compilers
+      compilers: [:thrift] ++ Mix.compilers
+
+      # ...
+      ]
+    end
+  end
+  ```
+
+  Run `mix deps.compile` first to ensure that the `compile.thrift` task
+  is available.
+  """
+
   use Mix.Task
 
   def run(_args) do

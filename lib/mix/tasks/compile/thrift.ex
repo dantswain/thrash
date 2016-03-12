@@ -2,6 +2,7 @@ defmodule Mix.Tasks.Compile.Thrift do
   use Mix.Task
 
   def run(_args) do
+    IO.puts("I AM RUNNING THE MIX COMPILE TASK")
     options = get_env_options()
 
     File.mkdir_p!(options[:thrift_output_dir])

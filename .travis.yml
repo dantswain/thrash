@@ -10,6 +10,6 @@ before_script:
   - cd thrift-0.9.3 && ./configure --without-java --without-ruby --without-python --without-go --without-nodejs && sudo make install
 script:
   - cd $TRAVIS_BUILD_DIR
-  - mkdir src
-  - thrift -o src --gen erl test/thrash_test.thrift
+  - mix compile
+  - THRIFT_INPUT_DIR=test/ mix compile.thrift
   - mix test

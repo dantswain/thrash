@@ -118,6 +118,54 @@ usage details.  Note, both of these mixins accept a `source` argument
 to allow you to manually define the source structure in your Thrift
 IDL.
 
+## Mix.Tasks.Compile.Thrift
+
+A compile task for Thrift is provided for convenience.  Once Thrash is
+compiled, you can execute `mix compile.thrift` to generate Erlang code
+(a required precursor for Thrash) from your Thrift IDL files (i.e.,
+`.thrift` files).  By default, `mix compile.thrift` assumes that your
+IDL files are in the `thrift` directory and that the output should go
+in the `src` directory. 
+
+The following environment variables modify the behavior of `mix
+compile.thrift`.
+
+* `THRIFT` - Path to the `thrift` binary (default: `thrift`).
+* `THRIFT_INPUT_DIR` - Directory containing your `.thrift` files
+  (default: `thrift`).
+* `THRIFT_OUTPUT_DIR` - Directory in which to place generated Erlang
+  source code (default: `src`).
+* `FORCE_THRIFT` - Set to any of `["TRUE", "true", "1"]` to force
+  execution of `thrift`.  The default behavior is is to automatically
+  determine if execution of `thrift` is required using mtimes of the
+  files in the input and output directories.
+
+Note, you can prepend `:thrift` to the list of compilers in your project
+(i.e., the project where your `.thrift` files live) to get this task
+to run automatically. 
+
+```
+defmodule MyProject.Mixfile do
+  use Mix.Project
+  
+  def project do
+    [app: :my_project,
+     # usual stuff ..
+
+     # prepend thrift to the usual list of compilers
+     compilers: [:thrift] ++ Mix.compilers
+
+     # ...
+    ]
+  end
+end
+```
+
+Run `mix deps.compile` first to ensure that the `compile.thrift` task
+is available.  Subsequently, the compile chain should automatically
+take care of compiling your `.thrift` files into Erlang and Elixir
+(via Thrash).
+
 ## Status
 
 Thrash is very much still a work in progress.  I have been focusing on
@@ -189,5 +237,19 @@ If you want to pull down this repository and poke around, check out
 [test/simple_struct.ex](test/simple_struct.ex) and
 [test/namespaced](test/namespaced/simple_struct.ex) to see how the API
 is currently being used.
+
+To execute the test suite, you need to first generate the erlang
+source from the test thrift file.
+
+```
+# fetch deps
+mix deps.fetch
+# make sure the compile.thrift task is available
+mix compile
+# compile thrift
+THRIFT_INPUT_DIR=test/ mix compile.thrift
+# now tests should work
+mix test
+```
 
 Standard Elixir and Github workflows apply here.  Pull requests are welcome.

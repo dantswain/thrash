@@ -16,7 +16,7 @@ defmodule Thrash.Mixfile do
   #
   # Type "mix help compile.app" for more information
   def application do
-    [applications: [:logger, :quaff, :thrift_ex]]
+    [applications: [:logger, :quaff]]
   end
 
   def elixirc_paths(:bench), do: ["lib", "bench"]
@@ -33,10 +33,10 @@ defmodule Thrash.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    [{:thrift_ex, github: "dantswain/thrift_ex"},
-     {:quaff, github: "qhool/quaff"},
+    [{:quaff, github: "qhool/quaff"},
      {:earmark, "~> 0.1", only: :dev},
      {:ex_doc, "~> 0.11", only: :dev},
+     {:thrift_ex, github: "dantswain/thrift_ex", only: :bench},
      {:exprof, "~>0.2", only: :bench},
      {:benchwarmer, "~>0.0.2", only: :bench}]
   end

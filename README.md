@@ -133,16 +133,15 @@ compile.thrift`.
 * `THRIFT` - Path to the `thrift` binary (default: `thrift`).
 * `THRIFT_INPUT_DIR` - Directory containing your `.thrift` files
   (default: `thrift`).
-* `THRIFT_OUTPUT_DIR` - Directory in which to place generated Erlang
-  source code (default: `src`).
+* `THRIFT_OUTPUT_DIR` - Directory in which generated Erlang
+  source code is placed (default: `src`).
 * `FORCE_THRIFT` - Set to any of `["TRUE", "true", "1"]` to force
-  execution of `thrift`.  The default behavior is is to automatically
-  determine if execution of `thrift` is required using mtimes of the
+  execution of `thrift`.  By default, the task automatically determines
+  if it is necessary to execute `thrift` based on the mtimes of the
   files in the input and output directories.
 
-Note, you can prepend `:thrift` to the list of compilers in your project
-(i.e., the project where your `.thrift` files live) to get this task
-to run automatically. 
+Prepend `:thrift` to the list of compilers in your project
+and this task will run automatically as needed.
 
 ```
 defmodule MyProject.Mixfile do
@@ -162,9 +161,7 @@ end
 ```
 
 Run `mix deps.compile` first to ensure that the `compile.thrift` task
-is available.  Subsequently, the compile chain should automatically
-take care of compiling your `.thrift` files into Erlang and Elixir
-(via Thrash).
+is available.
 
 ## Status
 

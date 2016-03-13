@@ -28,4 +28,5 @@ struct SimpleStruct {
   10: byte chew
   11: i16 mediumint
   12: map<i32, string> map_int_to_string
+  13: map<string, SubStruct> map_string_to_struct
 }

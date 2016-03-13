@@ -185,6 +185,15 @@ defmodule Thrash.Protocol.Binary do
 
     ast
   end
+  defp value_serializer({:set, of_type}, var) do
+    quote do
+      << unquote(Type.id(of_type)),
+      MapSet.size(unquote(Macro.var(var, __MODULE__))) :: 32-unsigned >> <>
+      (Enum.map(unquote(Macro.var(var, __MODULE__)),
+            fn(v) -> unquote(value_serializer(of_type, :v)) end)
+       |> Enum.join)
+    end
+  end
   defp value_serializer({:list, of_type}, var) do
     quote do
       << unquote(Type.id(of_type)),
@@ -207,6 +216,21 @@ defmodule Thrash.Protocol.Binary do
       list_deserializer.(unquote(Macro.var(lengthvar, __MODULE__)),
                          {[], unquote(Macro.var(restvar, __MODULE__))},
                          list_deserializer)
+    end
+  end
+
+  defp set_deserializer(type, lengthvar, restvar) do
+    quote do
+      set_deserializer = fn
+        (0, {acc, rest}, _recurser) -> {acc, rest}
+        (n, {acc, str}, recurser) ->
+          unquote(splice_binaries(value_matcher(type, :value), quote do: << rest :: binary >>)) = str
+          {value, rest} = unquote(value_mapper(type, :value, :rest))
+          recurser.(n - 1, {MapSet.put(acc, value), rest}, recurser)
+      end
+      set_deserializer.(unquote(Macro.var(lengthvar, __MODULE__)),
+                        {MapSet.new, unquote(Macro.var(restvar, __MODULE__))},
+                        set_deserializer)
     end
   end
 
@@ -277,16 +301,16 @@ defmodule Thrash.Protocol.Binary do
       << >>
     end
   end
-  defp value_matcher({:list, of_type}, var) do
-    # "var" will be the length of the list
-    quote do
-      << unquote(Type.id(of_type)), unquote(Macro.var(var, __MODULE__)) :: 32-unsigned >>
-    end
-  end
   defp value_matcher({:map, {from_type, to_type}}, var) do
     quote do
       << unquote(Type.id(from_type)), unquote(Type.id(to_type)),
       unquote(Macro.var(var, __MODULE__)) :: 32-unsigned >>
+    end
+  end
+  defp value_matcher({t, of_type}, var) when t in [:list, :set] do
+    # "var" will be the length of the list
+    quote do
+      << unquote(Type.id(of_type)), unquote(Macro.var(var, __MODULE__)) :: 32-unsigned >>
     end
   end
   defp value_matcher(type, var) do
@@ -311,11 +335,14 @@ defmodule Thrash.Protocol.Binary do
       unquote(struct_module).deserialize(unquote(Macro.var(rest, __MODULE__)))
     end
   end
-  defp value_mapper({:list, of_type}, var, rest) do
-    list_deserializer(of_type, var, rest)
-  end
   defp value_mapper({:map, {from_type, to_type}}, var, rest) do
     map_deserializer(from_type, to_type, var, rest)
+  end
+  defp value_mapper({:set, of_type}, var, rest) do
+    set_deserializer(of_type, var, rest)
+  end
+  defp value_mapper({:list, of_type}, var, rest) do
+    list_deserializer(of_type, var, rest)
   end
   defp value_mapper(_type, val, rest) do
     # note the tuple is the same as its quoted value, so we don't need
@@ -328,14 +355,19 @@ defmodule Thrash.Protocol.Binary do
       value == nil || value == unquote(struct_module).__struct__
     end
   end
-  defp empty_value?({:list, _}) do
-    quote do
-      value == nil || value == []
-    end
-  end
   defp empty_value?({:map, _}) do
     quote do
       value == nil || value == %{}
+    end
+  end
+  defp empty_value?({:set, _}) do
+    quote do
+      value == nil || value == MapSet.new
+    end
+  end
+  defp empty_value?({:list, _}) do
+    quote do
+      value == nil || value == []
     end
   end
   defp empty_value?(_) do

@@ -74,11 +74,14 @@ defmodule Thrash.StructDef do
   defp translate_type({:struct, {_from_mod, struct_module}}, namespace) do
     {:struct, Thrash.MacroHelpers.atom_to_elixir_module(struct_module, namespace)}
   end
-  defp translate_type({:list, of_type}, namespace) do
-    {:list, translate_type(of_type, namespace)}
-  end
   defp translate_type({:map, from_type, to_type}, namespace) do
     {:map, {translate_type(from_type, namespace), translate_type(to_type, namespace)}}
+  end
+  defp translate_type({:set, of_type}, namespace) do
+    {:set, translate_type(of_type, namespace)}
+  end
+  defp translate_type({:list, of_type}, namespace) do
+    {:list, translate_type(of_type, namespace)}
   end
   defp translate_type(other_type, _namespace), do: other_type
 
@@ -87,11 +90,15 @@ defmodule Thrash.StructDef do
     {:defer_struct, struct_module}
   end
   defp translate_default(:bool, :undefined, _namespace), do: false
-  defp translate_default({:list, _}, :undefined, _namespace), do: []
   defp translate_default({:map, _, _}, :undefined, _namespace), do: %{}
   defp translate_default({:map, _, _}, default_map, _namespace) do
     :dict.to_list(default_map) |> Enum.into(%{})
   end
+  defp translate_default({:set, _}, :undefined, _namespace), do: MapSet.new
+  defp translate_default({:set, _}, default_set, _namespace) do
+    :sets.fold(fn(el, acc) -> MapSet.put(acc, el) end, MapSet.new, default_set)
+  end
+  defp translate_default({:list, _}, :undefined, _namespace), do: []
   defp translate_default(_, :undefined, _namespace), do: nil
   defp translate_default(_, default, _namespace), do: default
 

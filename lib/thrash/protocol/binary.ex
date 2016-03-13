@@ -129,6 +129,11 @@ defmodule Thrash.Protocol.Binary do
       << Thrash.Protocol.Binary.bool_to_byte(unquote(Macro.var(var, __MODULE__))) :: 8-unsigned >>
     end
   end
+  defp value_serializer(:byte, var) do
+    quote do
+      << unquote(Macro.var(var, __MODULE__)) :: 8-unsigned >>
+    end
+  end
   defp value_serializer(:double, var) do
     quote do
       << unquote(Macro.var(var, __MODULE__)) :: signed-float >>
@@ -206,6 +211,11 @@ defmodule Thrash.Protocol.Binary do
   end
 
   defp value_matcher(:bool, var) do
+    quote do
+      << unquote(Macro.var(var, __MODULE__)) :: 8-unsigned >>
+    end
+  end
+  defp value_matcher(:byte, var) do
     quote do
       << unquote(Macro.var(var, __MODULE__)) :: 8-unsigned >>
     end

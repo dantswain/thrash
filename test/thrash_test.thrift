@@ -25,4 +25,5 @@ struct SimpleStruct {
   7: double floatval
   8: TacoType taco_pref
   9: list<SubStruct> list_of_structs
+  10: byte chew
 }

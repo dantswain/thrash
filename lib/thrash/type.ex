@@ -6,6 +6,7 @@ defmodule Thrash.Type do
   @type type_specifier :: :bool |
                           :byte |
                           :double |
+                          :i16 |
                           :i32 |
                           :enum |
                           {:enum, term} |
@@ -25,6 +26,7 @@ defmodule Thrash.Type do
   def id(:bool), do: 2
   def id(:byte), do: 3
   def id(:double), do: 4
+  def id(:i16), do: 6
   def id(:i32), do: 8
   def id(:enum), do: 8        # enum are stored as i32
   def id({:enum, _}), do: 8   # enum are stored as i32

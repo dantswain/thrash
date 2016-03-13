@@ -139,6 +139,11 @@ defmodule Thrash.Protocol.Binary do
       << unquote(Macro.var(var, __MODULE__)) :: signed-float >>
     end
   end
+  defp value_serializer(:i16, var) do
+    quote do
+      << unquote(Macro.var(var, __MODULE__)) :: 16-signed >>
+    end
+  end
   defp value_serializer(:i32, var) do
     quote do
       << unquote(Macro.var(var, __MODULE__)) :: 32-signed >>

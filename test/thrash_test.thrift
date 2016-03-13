@@ -26,4 +26,5 @@ struct SimpleStruct {
   8: TacoType taco_pref
   9: list<SubStruct> list_of_structs
   10: byte chew
+  11: i16 mediumint
 }

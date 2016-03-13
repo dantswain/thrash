@@ -170,6 +170,21 @@ defmodule Thrash.Protocol.Binary do
       unquote(struct_module).serialize(unquote(Macro.var(var, __MODULE__)))
     end
   end
+  defp value_serializer({:map, {from_type, to_type}}, var) do
+    ast = quote do
+      << unquote(Type.id(from_type)), unquote(Type.id(to_type)),
+      Map.size(unquote(Macro.var(var, __MODULE__))) :: 32-unsigned >> <>
+      (Enum.map(
+            unquote(Macro.var(var, __MODULE__)),
+            fn({k, v}) ->
+              unquote(value_serializer(from_type, :k)) <>
+                unquote(value_serializer(to_type, :v))
+            end)
+       |> Enum.join)
+    end
+
+    ast
+  end
   defp value_serializer({:list, of_type}, var) do
     quote do
       << unquote(Type.id(of_type)),
@@ -195,6 +210,28 @@ defmodule Thrash.Protocol.Binary do
     end
   end
 
+  defp map_deserializer(from_type, to_type, lengthvar, restvar) do
+    quote do
+      map_deserializer = fn
+        (0, {acc, rest}, _recurser) -> {acc, rest}
+        (n, {acc, str}, recurser) ->
+          unquote(splice_binaries(
+                value_matcher(from_type, :key),
+                quote do: << rest :: binary >>
+              )) = str
+          {key_value, rest} = unquote(value_mapper(from_type, :key, :rest))
+          unquote(splice_binaries(
+                value_matcher(to_type, :value),
+                quote do: << rest :: binary >>
+              )) = rest
+          {value, rest} = unquote(value_mapper(to_type, :value, :rest))
+          recurser.(n - 1, {Map.put(acc, key, value), rest}, recurser)
+      end
+      map_deserializer.(unquote(Macro.var(lengthvar, __MODULE__)),
+                        {%{}, unquote(Macro.var(restvar, __MODULE__))},
+                        map_deserializer)
+    end
+  end
 
   defp deserializer(nil, :final, _ix) do
     quote do
@@ -246,6 +283,12 @@ defmodule Thrash.Protocol.Binary do
       << unquote(Type.id(of_type)), unquote(Macro.var(var, __MODULE__)) :: 32-unsigned >>
     end
   end
+  defp value_matcher({:map, {from_type, to_type}}, var) do
+    quote do
+      << unquote(Type.id(from_type)), unquote(Type.id(to_type)),
+      unquote(Macro.var(var, __MODULE__)) :: 32-unsigned >>
+    end
+  end
   defp value_matcher(type, var) do
     # for "simple" values, we can use the same pattern that value_serializer generates
     value_serializer(type, var)
@@ -271,6 +314,9 @@ defmodule Thrash.Protocol.Binary do
   defp value_mapper({:list, of_type}, var, rest) do
     list_deserializer(of_type, var, rest)
   end
+  defp value_mapper({:map, {from_type, to_type}}, var, rest) do
+    map_deserializer(from_type, to_type, var, rest)
+  end
   defp value_mapper(_type, val, rest) do
     # note the tuple is the same as its quoted value, so we don't need
     # to quote/unquote here
@@ -285,6 +331,11 @@ defmodule Thrash.Protocol.Binary do
   defp empty_value?({:list, _}) do
     quote do
       value == nil || value == []
+    end
+  end
+  defp empty_value?({:map, _}) do
+    quote do
+      value == nil || value == %{}
     end
   end
   defp empty_value?(_) do

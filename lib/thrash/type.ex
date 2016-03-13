@@ -14,6 +14,8 @@ defmodule Thrash.Type do
                           :string |
                           :struct |
                           {:struct, term} |
+                          :map |
+                          {:map, term, term} |
                           :list |
                           {:list, term}
 
@@ -34,6 +36,8 @@ defmodule Thrash.Type do
   def id(:string), do: 11
   def id(:struct), do: 12
   def id({:struct, _}), do: 12
+  def id(:map), do: 13
+  def id({:map, {_, _}}), do: 13
   def id(:list), do: 15
   def id({:list, _}), do: 15
 end

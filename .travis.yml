@@ -1,4 +1,7 @@
 language: elixir
+otp_release:
+  - 17.4
+  - 18.2.1
 elixir:
   - 1.1.1
 sudo: true

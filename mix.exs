@@ -4,7 +4,7 @@ defmodule Thrash.Mixfile do
   def project do
     [app: :thrash,
      version: "0.0.1",
-     elixir: "~> 1.1",
+     elixir: "~> 1.0",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      erlc_options: [:bin_opt_info],

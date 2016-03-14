@@ -127,27 +127,36 @@ See [lib/mix/tasks/compile/thrift.ex](lib/mix/tasks/compile/thrift.ex)
 for detailed documentation of the compile task, including how to
 modify your mix.exs file so that this task runs automatically.
 
+## Data Types
+
+Thrift data types are mapped to Elixir as follows.
+
+| Thrift Type   | Elixir Type     |
+| ------------- |-----------------|
+| Boolean       | Boolean         |
+| Byte          | Integer         |
+| i16           | Integer         |
+| i32           | Integer         |
+| i64           | Integer         |
+| Double        | Float           |
+| String        | String (binary) |
+| Struct        | Struct          |
+| Enumerated    | Thrash.Enum     |
+| Map           | Map (`%{}`)     |
+| Set           | MapSet          |
+| List          | List (`[]`)     |
+
 ## Status
 
-Thrash is very much still a work in progress.  I have been focusing on
-implementing the functionality that I need.
+Thrash should provide a complete solution for
+serialization/deserialization via the Thrift binary protocol.  I have been
+focusing on implementing the functionality that I need while leaving
+the door open for other functionality.  I have no plans to implement
+other protocols, but would welcome pull requests.
 
-* Many of the basic thrift data types are implemented: bool, double,
-  i32, enum, i64, string, struct, and list.  Adding support for other
-  data types should be relatively easy with the possible exceptions of
-  map and set.
-
-* I haven't finalized the API for reading from the thrift IDL, but it
-  is coming along.
-
-* I have been focused on Thrift Binary Protocol because that is what
-  my use case needs and what the official Erlang library implements and
-  I want to be able to do benchmark comparisons.  I have no plans to
-  implement other protocols, but would welcome pull requests.
-
-* There is no implementation here for services or servers.  It should
-  be possible to build something like that using Thrash.  Pull
-  requests are welcomed.
+Thrash provides no implementation here for services or servers.  It
+should be possible to build something like that using Thrash and a
+third party server library.  Pull requests are welcomed.
 
 ## Benchmarks
 
@@ -191,6 +200,20 @@ Done
 According to these results, Thrash is about 5x faster for
 serialization and about 18x faster for deserialization compared to the
 official Erlang library.
+
+## Thrift Version Compatibility
+
+Note that Thrift < 0.9.3 is not compatible with Erlang/OTP R18 and
+up.  Therefore, for best results, you should upgrade to at least
+Thrift 0.9.3.
+
+Your mileage may vary - the main cause of incompatibility is the
+`dict` type, which the Thrift Erlang module uses for maps.  Your code
+may be OK if you are not using any maps in your Thrift IDL.  If you
+ARE using maps in your Thrift IDL and you are unable to upgrade
+Thrift, you _might_ be able to hack in support by modifying the generated
+Erlang typespecs to replace any instances of the `dict()` type with
+`dict:dict()`.
 
 ## Development & Contribution
 

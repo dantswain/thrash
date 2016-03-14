@@ -5,6 +5,12 @@
 An Elixir library for serialization and deserialization of
 [Apache Thrift](https://thrift.apache.org/) messages. 🤘
 
+## Requirements
+
+Thrash requires Elixir v1.1 or newer to support Sets and Thrift 0.9.3
+or newer to support Maps (see below).  Therefore, it is recommended
+that you use Elixir >= 1.1 and Thrift >= 0.9.3.
+
 ## Philosophy
 
 Thrash is an attempt to provide faster serialization/deserialization

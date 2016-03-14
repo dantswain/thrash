@@ -131,7 +131,7 @@ defmodule Thrash.Protocol.Binary do
   end
   defp value_serializer(:byte, var) do
     quote do
-      << unquote(Macro.var(var, __MODULE__)) :: 8-unsigned >>
+      << unquote(Macro.var(var, __MODULE__)) :: 8-signed >>
     end
   end
   defp value_serializer(:double, var) do
@@ -171,7 +171,7 @@ defmodule Thrash.Protocol.Binary do
     end
   end
   defp value_serializer({:map, {from_type, to_type}}, var) do
-    ast = quote do
+    quote do
       << unquote(Type.id(from_type)), unquote(Type.id(to_type)),
       Map.size(unquote(Macro.var(var, __MODULE__))) :: 32-unsigned >> <>
       (Enum.map(
@@ -182,8 +182,6 @@ defmodule Thrash.Protocol.Binary do
             end)
        |> Enum.join)
     end
-
-    ast
   end
   defp value_serializer({:set, of_type}, var) do
     quote do
@@ -243,7 +241,7 @@ defmodule Thrash.Protocol.Binary do
                 value_matcher(from_type, :key),
                 quote do: << rest :: binary >>
               )) = str
-          {key_value, rest} = unquote(value_mapper(from_type, :key, :rest))
+          {key, rest} = unquote(value_mapper(from_type, :key, :rest))
           unquote(splice_binaries(
                 value_matcher(to_type, :value),
                 quote do: << rest :: binary >>
@@ -283,7 +281,7 @@ defmodule Thrash.Protocol.Binary do
   end
   defp value_matcher(:byte, var) do
     quote do
-      << unquote(Macro.var(var, __MODULE__)) :: 8-unsigned >>
+      << unquote(Macro.var(var, __MODULE__)) :: 8-signed >>
     end
   end
   defp value_matcher({:enum, _enum_module}, var) do

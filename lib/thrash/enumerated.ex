@@ -59,7 +59,7 @@ defmodule Thrash.Enumerated do
     # if you get ":enum_not_found" here, it indicates that the enum
     # you were looking for does not exist in the thrift-generated
     # erlang code
-    map = find_in_thrift(module) |> ensure_quoted
+    map = module |> find_in_thrift |> ensure_quoted
     atoms = get_keys(map)
     values = get_values(map)
     reversed = build_reverse(map)

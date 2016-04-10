@@ -4,6 +4,7 @@ defmodule Thrash.MacroHelpers do
   """
 
   @type escaped_module_name :: {term, list, [atom]}
+  @type namespace :: nil | {atom, atom}
 
   @doc """
   Determine the caller module name with optional override.
@@ -36,11 +37,15 @@ defmodule Thrash.MacroHelpers do
   """
   @spec atom_to_elixir_module(atom, nil | atom) :: atom
   def atom_to_elixir_module(atom, nil) do
-    moduleize(Atom.to_string(atom))
+    atom
+    |> Atom.to_string
+    |> moduleize
     |> String.to_atom
   end
   def atom_to_elixir_module(atom, namespace) do
-    (Atom.to_string(namespace) <> "." <> Atom.to_string(atom))
+    atom
+    |> Atom.to_string
+    |> prepend_string_namespace(namespace)
     |> moduleize
     |> String.to_atom
   end
@@ -58,9 +63,10 @@ defmodule Thrash.MacroHelpers do
       iex> Thrash.MacroHelpers.find_namespace(Foo.Bar.Baz)
       Foo.Bar
   """
-  @spec find_namespace(atom) :: {nil | atom, atom}
+  @spec find_namespace(atom) :: namespace
   def find_namespace(modulename) do
-    parts = Atom.to_string(modulename)
+    parts = modulename
+    |> Atom.to_string
     |> String.reverse
     |> String.split(".", parts: 2)
     |> Enum.map(&String.reverse/1)
@@ -100,6 +106,10 @@ defmodule Thrash.MacroHelpers do
   end
   defp moduleize(string) do
     "Elixir." <> string
+  end
+
+  defp prepend_string_namespace(module_name, namespace) do
+    (Atom.to_string(namespace) <> "." <> module_name)
   end
 
   defp quoted_chained_or([], ast) do

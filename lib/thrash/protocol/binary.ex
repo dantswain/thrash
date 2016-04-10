@@ -67,7 +67,8 @@ defmodule Thrash.Protocol.Binary do
     caller_namespace = MacroHelpers.find_namespace(caller)
     modulename = MacroHelpers.determine_module_name(source_module, caller)
 
-    thrift_def = Thrash.StructDef.find_in_thrift(modulename, caller_namespace)
+    thrift_def = modulename
+    |> Thrash.StructDef.find_in_thrift(caller_namespace)
     |> Thrash.StructDef.override_types(types)
 
     [generate_struct(modulename, types, defaults, caller_namespace)] ++
@@ -85,7 +86,8 @@ defmodule Thrash.Protocol.Binary do
 
   defp generate_struct(modulename, types, defaults, caller_namespace) do
     quote do
-      defstruct(Thrash.StructDef.find_in_thrift(unquote(modulename), unquote(caller_namespace))
+      defstruct(unquote(modulename)
+                |> Thrash.StructDef.find_in_thrift(unquote(caller_namespace))
                 |> Thrash.StructDef.override_types(unquote(types))
                 |> Thrash.StructDef.override_defaults(unquote(defaults))
                 |> Thrash.StructDef.to_defstruct)
@@ -101,7 +103,9 @@ defmodule Thrash.Protocol.Binary do
   end
 
   defp generate_field_serializers(thrift_def) do
-    Enum.with_index(thrift_def ++ [Thrash.StructDef.Field.finalizer])
+    thrift_def
+    |> Thrash.StructDef.with_finalizer
+    |> Enum.with_index
     |> Enum.map(fn({field, ix}) -> serializer(field.type, field.name, ix) end)
   end
 
@@ -114,7 +118,9 @@ defmodule Thrash.Protocol.Binary do
   end
 
   defp generate_field_deserializers(thrift_def) do
-    Enum.with_index(thrift_def ++ [Thrash.StructDef.Field.finalizer])
+    thrift_def
+    |> Thrash.StructDef.with_finalizer
+    |> Enum.with_index
     |> Enum.map(fn({field, ix}) -> deserializer(field.type, field.name, ix) end)
   end
 
@@ -174,31 +180,30 @@ defmodule Thrash.Protocol.Binary do
     quote do
       << unquote(Type.id(from_type)), unquote(Type.id(to_type)),
       Map.size(unquote(Macro.var(var, __MODULE__))) :: 32-unsigned >> <>
-      (Enum.map(
-            unquote(Macro.var(var, __MODULE__)),
-            fn({k, v}) ->
-              unquote(value_serializer(from_type, :k)) <>
-                unquote(value_serializer(to_type, :v))
-            end)
-       |> Enum.join)
+      (unquote(Macro.var(var, __MODULE__))
+      |> Enum.map(fn({k, v}) ->
+          unquote(value_serializer(from_type, :k)) <>
+            unquote(value_serializer(to_type, :v))
+        end)
+      |> Enum.join)
     end
   end
   defp value_serializer({:set, of_type}, var) do
     quote do
       << unquote(Type.id(of_type)),
       MapSet.size(unquote(Macro.var(var, __MODULE__))) :: 32-unsigned >> <>
-      (Enum.map(unquote(Macro.var(var, __MODULE__)),
-            fn(v) -> unquote(value_serializer(of_type, :v)) end)
-       |> Enum.join)
+      (unquote(Macro.var(var, __MODULE__))
+      |> Enum.map(fn(v) -> unquote(value_serializer(of_type, :v)) end)
+      |> Enum.join)
     end
   end
   defp value_serializer({:list, of_type}, var) do
     quote do
       << unquote(Type.id(of_type)),
       length(unquote(Macro.var(var, __MODULE__))) :: 32-unsigned >> <>
-      (Enum.map(unquote(Macro.var(var, __MODULE__)),
-            fn(v) -> unquote(value_serializer(of_type, :v)) end)
-       |> Enum.join)
+      (unquote(Macro.var(var, __MODULE__))
+      |> Enum.map(fn(v) -> unquote(value_serializer(of_type, :v)) end)
+      |> Enum.join)
     end
   end
 
@@ -263,8 +268,9 @@ defmodule Thrash.Protocol.Binary do
   defp deserializer(type, fieldname, ix) do
     quote do
       def deserialize_field(
-            unquote(splice_binaries(header(type, ix),
-                                    value_matcher(type, :value))
+            unquote(type
+                    |> header(ix)
+                    |> splice_binaries(value_matcher(type, :value))
                     |> splice_binaries(quote do: << rest :: binary >>)), acc) do
         {value, rest} = unquote(value_mapper(type, :value, :rest))
         deserialize_field(rest, Map.put(acc,

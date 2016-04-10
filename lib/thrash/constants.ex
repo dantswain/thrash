@@ -26,7 +26,8 @@ defmodule Thrash.Constants do
     |> Enum.map(fn(header) ->
       namespace = ThriftMeta.constants_namespace(header)
 
-      ThriftMeta.read_constants_exclusive(header)
+      header
+      |> ThriftMeta.read_constants_exclusive
       |> ThriftMeta.thrashify_constants(namespace)
     end)
     |> List.flatten

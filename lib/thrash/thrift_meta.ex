@@ -13,7 +13,8 @@ defmodule Thrash.ThriftMeta do
   """
   @spec erl_gen_path() :: String.t
   def erl_gen_path() do
-    Application.get_env(:thrash, :erl_gen_path, "src/gen-erl")
+    :thrash
+    |> Application.get_env(:erl_gen_path, "src/gen-erl")
     |> Path.expand
   end
 
@@ -46,7 +47,8 @@ defmodule Thrash.ThriftMeta do
   """
   @spec constants_namespace(String.t) :: String.t
   def constants_namespace(header) do
-    Path.basename(header, ".hrl")
+    header
+    |> Path.basename(".hrl")
     |> String.replace(~r/constants$/, "")
     |> String.upcase
   end
@@ -62,7 +64,9 @@ defmodule Thrash.ThriftMeta do
     basename = Path.basename(header_file, ".hrl")
     included_tag = String.to_atom("_" <> basename <> "_included")
     meta_constants = [:MODULE_STRING, :FILE, :MODULE, included_tag]
-    Quaff.Constants.get_constants(header_file, [])
+
+    header_file
+    |> Quaff.Constants.get_constants([])
     |> Enum.filter(fn({k, _v}) ->
       !Enum.member?(meta_constants, k)
     end)
@@ -83,29 +87,30 @@ defmodule Thrash.ThriftMeta do
   """
   @spec read_constants_exclusive(String.t) :: Keyword.t
   def read_constants_exclusive(header_file) do
-    constants = read_constants(header_file)
+    constants = header_file
+    |> read_constants
     |> Enum.into(MapSet.new)
 
     included = determine_included_libs(constants, header_file)
-    included_constants = Enum.map(included,
-      fn(incl) -> read_constants(incl) end)
+
+    included_constants = included
+    |> Enum.map(&read_constants/1)
     |> List.flatten
     |> Enum.uniq
     |> Enum.into(MapSet.new)
 
-    MapSet.difference(constants, included_constants)
+    constants
+    |> MapSet.difference(included_constants)
     |> Enum.into([])
     |> Enum.filter(&is_not_included_lib?/1)
   end
 
   def determine_included_libs(constants, header_file) do
     dir = Path.dirname(header_file)
-    Enum.filter(constants, fn({constant, value}) ->
-      is_included_lib?({constant, value})
-    end)
-    |> Enum.map(fn({k, _v}) ->
-      included_tag_to_header(k, dir)
-    end)
+
+    constants
+    |> Enum.filter(fn(constant_def) -> is_included_lib?(constant_def) end)
+    |> Enum.map(fn({k, _v}) -> included_tag_to_header(k, dir) end)
   end
 
   @doc """
@@ -116,7 +121,7 @@ defmodule Thrash.ThriftMeta do
   removed from the struct_name before calling struct_info (e.g.,
   'Foo.Bar' -> 'Bar').
   """
-  @spec read_struct(String.t, atom, atom) :: {:ok, Keyword.t} | {:error, []} 
+  @spec read_struct(String.t, atom, atom) :: {:ok, StructDef.t} | {:error, []} 
   def read_struct(header_file, struct_name, namespace) do
     basename = Path.basename(header_file, ".hrl")
     modulename = String.to_atom(basename)
@@ -136,9 +141,11 @@ defmodule Thrash.ThriftMeta do
     basename = Path.basename(header_file, ".hrl")
     namespace_string = String.replace(basename, ~r/_types$/, "")
     enum_name_string = last_part_of_atom_as_string(enum_name)
-    full_namespace = (namespace_string <> "_" <> enum_name_string <> "_") |> String.upcase
+    full_namespace = String.upcase(namespace_string <> "_" <>
+      enum_name_string <> "_")
     
-    read_constants(header_file)
+    header_file
+    |> read_constants
     |> Enum.filter(fn({k, _v}) -> has_namespace?(k, full_namespace) end)
     |> Enum.map(fn({k, v}) -> {thrift_to_thrash_const(k, full_namespace), v} end)
     |> Enum.into(%{})
@@ -164,7 +171,8 @@ defmodule Thrash.ThriftMeta do
   end
 
   defp has_namespace?(atom, namespace) do
-    Atom.to_string(atom)
+    atom
+    |> Atom.to_string
     |> String.starts_with?(namespace)
   end
 
@@ -204,7 +212,8 @@ defmodule Thrash.ThriftMeta do
   end
 
   defp included_tag_to_header(tag, dir) do
-    Atom.to_string(tag)
+    tag
+    |> Atom.to_string
     |> String.replace(~r/^_(.*)_included$/, "\\1")
     |> (&(Path.join(dir, &1 <> ".hrl"))).()
   end

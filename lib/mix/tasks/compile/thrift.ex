@@ -83,7 +83,8 @@ defmodule Mix.Tasks.Compile.Thrift do
   end
 
   defp run_thrift(thrift_bin, thrift_input_dir, thrift_output_dir) do
-    thrift_files(thrift_input_dir)
+    thrift_input_dir
+    |> thrift_files
     |> Enum.each(fn(f) -> run_thrift_on(f, thrift_bin, thrift_output_dir) end)
   end
 

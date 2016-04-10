@@ -10,30 +10,41 @@ defmodule Thrash.StructDef do
     """
 
     defstruct(id: nil, required: nil, type: nil, name: nil, default: nil)
+    @type t :: %Field{id: integer,
+                      required: boolean,
+                      type: Thrash.Type.type_specifier,
+                      name: atom,
+                      default: term}
 
     def finalizer do
       %Field{name: :final}
     end
   end
 
+  @type t :: [Field.t]
+  @type thrift_field :: {id :: integer,
+                         required :: boolean,
+                         type :: atom,
+                         name :: atom,
+                         default :: term}
+
   alias Thrash.ThriftMeta
 
+  @spec find_in_thrift(atom, MacroHelpers.namespace) :: t
   def find_in_thrift(modulename, namespace) do
     ThriftMeta.find_in_thrift(fn(h) ->
       ThriftMeta.read_struct(h, modulename, namespace)
     end, :struct_not_found)
   end
 
+  @spec read(atom, atom, MacroHelpers.namespace) :: {:ok, t} | {:error, []}
   def read(modulename, struct_name, namespace) do
-    try do
-      {:ok, modulename.struct_info_ext(struct_name)}
-    rescue
-      _e in FunctionClauseError ->
-        {:error, []}
-    end
+    struct_name
+    |> try_reading_struct_from(modulename)
     |> maybe_do(fn(struct_info) -> from_struct_info(namespace, struct_info) end)
   end
 
+  @spec from_struct_info(MacroHelpers.namespace, {:struct, [thrift_field]}) :: t
   def from_struct_info(namespace, {:struct, fields}) do
     Enum.map(fields, fn({id, required, type, name, default}) ->
       %Field{id: id,
@@ -44,12 +55,14 @@ defmodule Thrash.StructDef do
     end)
   end
 
+  @spec to_defstruct(t) :: Keyword.t
   def to_defstruct(fields) do
     Enum.map(fields, fn(field) ->
       {field.name, collapse_deferred_defaults(field.default)}
     end)
   end
 
+  @spec override_defaults(t, Keyword.t) :: t
   def override_defaults(fields, overrides) do
     Enum.reduce(overrides, fields, fn({k, v}, fields) ->
       Enum.map(fields, fn(field) ->
@@ -58,6 +71,7 @@ defmodule Thrash.StructDef do
     end)
   end
 
+  @spec override_types(t, Keyword.t) :: t
   def override_types(fields, overrides) do
     Enum.reduce(overrides, fields, fn({k, v}, fields) ->
       Enum.map(fields, fn(field) ->
@@ -65,6 +79,9 @@ defmodule Thrash.StructDef do
       end)
     end)
   end
+
+  @spec with_finalizer(t) :: t
+  def with_finalizer(fields), do: fields ++ [Field.finalizer]
 
   defp maybe_do({:ok, x}, f) do
     {:ok, f.(x)}
@@ -92,7 +109,9 @@ defmodule Thrash.StructDef do
   defp translate_default(:bool, :undefined, _namespace), do: false
   defp translate_default({:map, _, _}, :undefined, _namespace), do: %{}
   defp translate_default({:map, _, _}, default_map, _namespace) do
-    :dict.to_list(default_map) |> Enum.into(%{})
+    default_map
+    |> :dict.to_list
+    |> Enum.into(%{})
   end
   defp translate_default({:set, _}, :undefined, _namespace), do: MapSet.new
   defp translate_default({:set, _}, default_set, _namespace) do
@@ -128,5 +147,14 @@ defmodule Thrash.StructDef do
   end
   defp collapse_deferred_defaults(default) do
     default
+  end
+
+  defp try_reading_struct_from(struct_name, modulename) do
+    try do
+      {:ok, modulename.struct_info_ext(struct_name)}
+    rescue
+      _e in FunctionClauseError ->
+        {:error, []}
+    end
   end
 end

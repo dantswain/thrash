@@ -1,6 +1,10 @@
 # Thrash
 
 [![Build Status](https://travis-ci.org/dantswain/thrash.svg?branch=master)](https://travis-ci.org/dantswain/thrash)
+[![Hex.pm version](https://img.shields.io/hexpm/v/thrash.svg?style=flat-square)](https://hex.pm/packages/thrash)
+[![Hex.pm downloads](https://img.shields.io/hexpm/dt/thrash.svg?style=flat-square)](https://hex.pm/packages/thrash)
+[![License](https://img.shields.io/hexpm/l/thrash.svg?style=flat-square)](https://hex.pm/packages/thrash)
+[![API Docs](https://img.shields.io/badge/api-docs-yellow.svg?style=flat)](http://hexdocs.pm/thrash/)
 
 An Elixir library for serialization and deserialization of
 [Apache Thrift](https://thrift.apache.org/) messages. 🤘

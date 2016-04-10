@@ -4,6 +4,8 @@ defmodule Thrash.Mixfile do
   def project do
     [app: :thrash,
      version: "0.0.1",
+     description: description,
+     package: package,
      elixir: "~> 1.1",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
@@ -27,11 +29,28 @@ defmodule Thrash.Mixfile do
       override: true},
      {:earmark, "~> 0.1", only: :dev},
      {:ex_doc, "~> 0.11", only: :dev},
+     {:dialyze, "~> 0.2", only: :dev},
+     {:credo, "~> 0.3", only: :dev},
      {:thrift_ex,
       github: "dantswain/thrift_ex",
       only: :bench,
       tag: "f6394871e5685aa1c7e125f198dead0c8a15e992"},
      {:exprof, "~>0.2", only: :bench},
      {:benchwarmer, "~>0.0.2", only: :bench}]
+  end
+
+  defp description do
+    """
+    Fast serializer/deserializer for Apache Thrift's binary protocol.
+    """
+  end
+
+  defp package do
+    [
+      files: ["lib", "LICENSE.txt", "mix.exs", "README.md"],
+      licenses: ["MIT"],
+      links: %{"GitHub" => "https://github.com/dantswain/thrash"},
+      maintainers: ["Dan Swain"]
+    ]
   end
 end

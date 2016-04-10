@@ -1,5 +1,8 @@
 %{"aleppo": {:git, "https://github.com/ChicagoBoss/aleppo.git", "e5af421b8c75d86dd88aefae91402478250bb82c", [tag: "v0.9"]},
   "benchwarmer": {:hex, :benchwarmer, "0.0.2"},
+  "bunt": {:hex, :bunt, "0.1.5"},
+  "credo": {:hex, :credo, "0.3.11"},
+  "dialyze": {:hex, :dialyze, "0.2.1"},
   "earmark": {:hex, :earmark, "0.2.1"},
   "ex_doc": {:hex, :ex_doc, "0.11.4"},
   "exprintf": {:hex, :exprintf, "0.1.6"},

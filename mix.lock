@@ -1,9 +1,9 @@
-%{"aleppo": {:git, "https://github.com/ChicagoBoss/aleppo.git", "e5af421b8c75d86dd88aefae91402478250bb82c", [branch: "master"]},
+%{"aleppo": {:git, "https://github.com/ChicagoBoss/aleppo.git", "e5af421b8c75d86dd88aefae91402478250bb82c", [tag: "v0.9"]},
   "benchwarmer": {:hex, :benchwarmer, "0.0.2"},
   "earmark": {:hex, :earmark, "0.2.1"},
   "ex_doc": {:hex, :ex_doc, "0.11.4"},
   "exprintf": {:hex, :exprintf, "0.1.6"},
   "exprof": {:hex, :exprof, "0.2.0"},
-  "quaff": {:git, "https://github.com/qhool/quaff.git", "df680221f52337baefacc4fab42cc8ef546c8fa8", []},
+  "quaff": {:git, "https://github.com/qhool/quaff.git", "9a4ba378d470beac708e366dc9bacd5a9ef6f016", [tag: "9a4ba378d470beac708e366dc9bacd5a9ef6f016"]},
   "thrift": {:git, "https://github.com/apache/thrift", "591e20f9636c37527a70dc03598218c3468a0eff", [tag: "0.9.2"]},
-  "thrift_ex": {:git, "https://github.com/dantswain/thrift_ex.git", "3fe3341f9dc34219ceb04ae2d3751b9fb5eac37a", []}}
+  "thrift_ex": {:git, "https://github.com/dantswain/thrift_ex.git", "3fe3341f9dc34219ceb04ae2d3751b9fb5eac37a", [tag: "f6394871e5685aa1c7e125f198dead0c8a15e992"]}}

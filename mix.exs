@@ -12,9 +12,6 @@ defmodule Thrash.Mixfile do
      deps: deps]
   end
 
-  # Configuration for the OTP application
-  #
-  # Type "mix help compile.app" for more information
   def application do
     [applications: [:logger, :quaff]]
   end
@@ -23,20 +20,17 @@ defmodule Thrash.Mixfile do
   def elixirc_paths(:test), do: ["lib", "test"]
   def elixirc_paths(_), do: ["lib"]
 
-  # Dependencies can be Hex packages:
-  #
-  #   {:mydep, "~> 0.3.0"}
-  #
-  # Or git/path repositories:
-  #
-  #   {:mydep, git: "https://github.com/elixir-lang/mydep.git", tag: "0.1.0"}
-  #
-  # Type "mix help deps" for more examples and options
   defp deps do
-    [{:quaff, github: "qhool/quaff"},
+    [{:quaff,
+      github: "qhool/quaff",
+      tag: "9a4ba378d470beac708e366dc9bacd5a9ef6f016",
+      override: true},
      {:earmark, "~> 0.1", only: :dev},
      {:ex_doc, "~> 0.11", only: :dev},
-     {:thrift_ex, github: "dantswain/thrift_ex", only: :bench},
+     {:thrift_ex,
+      github: "dantswain/thrift_ex",
+      only: :bench,
+      tag: "f6394871e5685aa1c7e125f198dead0c8a15e992"},
      {:exprof, "~>0.2", only: :bench},
      {:benchwarmer, "~>0.0.2", only: :bench}]
   end

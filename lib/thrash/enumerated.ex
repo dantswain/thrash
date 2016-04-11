@@ -59,12 +59,12 @@ defmodule Thrash.Enumerated do
     # if you get ":enum_not_found" here, it indicates that the enum
     # you were looking for does not exist in the thrift-generated
     # erlang code
-    map = module |> find_in_thrift |> ensure_quoted
-    atoms = get_keys(map)
-    values = get_values(map)
-    reversed = build_reverse(map)
-    atoms_type = MacroHelpers.quoted_chained_or(atoms)
-    values_type = MacroHelpers.quoted_chained_or(values)
+    quoted_map = module |> find_in_thrift |> ensure_quoted
+    map_keys = get_keys(quoted_map)
+    map_values = get_values(quoted_map)
+    reversed = build_reverse(quoted_map)
+    atoms_type = MacroHelpers.quoted_chained_or(map_keys)
+    values_type = MacroHelpers.quoted_chained_or(map_values)
 
     quote do
       @typedoc "Valid atom values"
@@ -77,7 +77,7 @@ defmodule Thrash.Enumerated do
       Returns the map from valid atom values to integer values
       """
       @spec map() :: map
-      def map(), do: unquote(map)
+      def map(), do: unquote(quoted_map)
 
       @doc """
       Returns the reverse map from valid integer values to atom values
@@ -89,25 +89,25 @@ defmodule Thrash.Enumerated do
       Returns the list of valid atom values
       """
       @spec atoms() :: [atom]
-      def atoms(), do: unquote(atoms)
+      def atoms(), do: unquote(map_keys)
 
       @doc """
       Returns the list of valid integer values
       """
       @spec values() :: [integer]
-      def values(), do: unquote(values)
+      def values(), do: unquote(map_values)
 
       @doc """
       Returns the integer value corresponding to the given atom
       """
       @spec id(atom_t) :: value_t
-      def id(atom), do: unquote(map)[atom]
+      def id(for_atom), do: unquote(quoted_map)[for_atom]
 
       @doc """
       Returns the atom corresponding to the given integer value
       """
       @spec atom(value_t) :: atom_t
-      def atom(id), do: unquote(reversed)[id]
+      def atom(for_id), do: unquote(reversed)[for_id]
     end
   end
 
@@ -121,10 +121,10 @@ defmodule Thrash.Enumerated do
     Enum.map(kv, fn({k, v}) -> {v, k} end)
   end
 
-  defp ensure_quoted(map) when is_map(map) do
-    {:%{}, [line: __ENV__.line], Enum.into(map, [])}
+  defp ensure_quoted(m) when is_map(m) do
+    {:%{}, [line: __ENV__.line], Enum.into(m, [])}
   end
-  defp ensure_quoted(map), do: map
+  defp ensure_quoted(m), do: m
 
   defp build_reverse({:%{}, line, kv}) do
     {:%{}, line, reverse_kv(kv)}

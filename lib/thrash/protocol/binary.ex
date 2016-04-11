@@ -209,37 +209,37 @@ defmodule Thrash.Protocol.Binary do
 
   defp list_deserializer(type, lengthvar, restvar) do
     quote do
-      list_deserializer = fn
+      list_deserializer_fn = fn
         (0, {acc, rest}, _recurser) -> {Enum.reverse(acc), rest}
         (n, {acc, str}, recurser) ->
           unquote(splice_binaries(value_matcher(type, :value), quote do: << rest :: binary >>)) = str
           {value, rest} = unquote(value_mapper(type, :value, :rest))
           recurser.(n - 1, {[value | acc], rest}, recurser)
       end
-      list_deserializer.(unquote(Macro.var(lengthvar, __MODULE__)),
-                         {[], unquote(Macro.var(restvar, __MODULE__))},
-                         list_deserializer)
+      list_deserializer_fn.(unquote(Macro.var(lengthvar, __MODULE__)),
+                            {[], unquote(Macro.var(restvar, __MODULE__))},
+                            list_deserializer_fn)
     end
   end
 
   defp set_deserializer(type, lengthvar, restvar) do
     quote do
-      set_deserializer = fn
+      set_deserializer_fn = fn
         (0, {acc, rest}, _recurser) -> {acc, rest}
         (n, {acc, str}, recurser) ->
           unquote(splice_binaries(value_matcher(type, :value), quote do: << rest :: binary >>)) = str
           {value, rest} = unquote(value_mapper(type, :value, :rest))
           recurser.(n - 1, {MapSet.put(acc, value), rest}, recurser)
       end
-      set_deserializer.(unquote(Macro.var(lengthvar, __MODULE__)),
-                        {MapSet.new, unquote(Macro.var(restvar, __MODULE__))},
-                        set_deserializer)
+      set_deserializer_fn.(unquote(Macro.var(lengthvar, __MODULE__)),
+                           {MapSet.new, unquote(Macro.var(restvar, __MODULE__))},
+                           set_deserializer_fn)
     end
   end
 
   defp map_deserializer(from_type, to_type, lengthvar, restvar) do
     quote do
-      map_deserializer = fn
+      map_deserializer_fn = fn
         (0, {acc, rest}, _recurser) -> {acc, rest}
         (n, {acc, str}, recurser) ->
           unquote(splice_binaries(
@@ -254,9 +254,9 @@ defmodule Thrash.Protocol.Binary do
           {value, rest} = unquote(value_mapper(to_type, :value, :rest))
           recurser.(n - 1, {Map.put(acc, key, value), rest}, recurser)
       end
-      map_deserializer.(unquote(Macro.var(lengthvar, __MODULE__)),
-                        {%{}, unquote(Macro.var(restvar, __MODULE__))},
-                        map_deserializer)
+      map_deserializer_fn.(unquote(Macro.var(lengthvar, __MODULE__)),
+                           {%{}, unquote(Macro.var(restvar, __MODULE__))},
+                           map_deserializer_fn)
     end
   end
 

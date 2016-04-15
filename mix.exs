@@ -9,7 +9,6 @@ defmodule Thrash.Mixfile do
      elixir: "~> 1.1",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     erlc_options: [:bin_opt_info],
      elixirc_paths: elixirc_paths(Mix.env),
      deps: deps]
   end

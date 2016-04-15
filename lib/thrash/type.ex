@@ -24,7 +24,8 @@ defmodule Thrash.Type do
   @doc """
   Return the Thrift type id of a type specifier
 
-  See [thrift_constants.hrl](https://github.com/apache/thrift/blob/6ec6860801bdc87236e636add071c4faa2ac7e4b/lib/erl/include/thrift_constants.hrl#L21)
+  See thrift_constants.hrl in the
+  [Thrift repo](https://github.com/apache/thrift)
   """
   @spec id(type_specifier) :: non_neg_integer
   def id(:bool), do: 2

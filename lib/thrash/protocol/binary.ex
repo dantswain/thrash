@@ -58,6 +58,7 @@ defmodule Thrash.Protocol.Binary do
 
   alias Thrash.Type
   alias Thrash.MacroHelpers
+  alias Thrash.StructDef
 
   defmacro __using__(opts) do
     source_module = Keyword.get(opts, :source)
@@ -68,8 +69,8 @@ defmodule Thrash.Protocol.Binary do
     modulename = MacroHelpers.determine_module_name(source_module, caller)
 
     thrift_def = modulename
-    |> Thrash.StructDef.find_in_thrift(caller_namespace)
-    |> Thrash.StructDef.override_types(types)
+    |> StructDef.find_in_thrift(caller_namespace)
+    |> StructDef.override_types(types)
 
     [generate_struct(modulename, types, defaults, caller_namespace)] ++
       [generate_serialize()] ++
@@ -104,7 +105,7 @@ defmodule Thrash.Protocol.Binary do
 
   defp generate_field_serializers(thrift_def) do
     thrift_def
-    |> Thrash.StructDef.with_finalizer
+    |> StructDef.with_finalizer
     |> Enum.with_index
     |> Enum.map(fn({field, ix}) -> serializer(field.type, field.name, ix) end)
   end
@@ -119,7 +120,7 @@ defmodule Thrash.Protocol.Binary do
 
   defp generate_field_deserializers(thrift_def) do
     thrift_def
-    |> Thrash.StructDef.with_finalizer
+    |> StructDef.with_finalizer
     |> Enum.with_index
     |> Enum.map(fn({field, ix}) -> deserializer(field.type, field.name, ix) end)
   end
@@ -132,7 +133,9 @@ defmodule Thrash.Protocol.Binary do
 
   defp value_serializer(:bool, var) do
     quote do
-      << Thrash.Protocol.Binary.bool_to_byte(unquote(Macro.var(var, __MODULE__))) :: 8-unsigned >>
+      << Thrash.Protocol.Binary.bool_to_byte(
+        unquote(Macro.var(var, __MODULE__))
+      ) :: 8-unsigned >>
     end
   end
   defp value_serializer(:byte, var) do
@@ -157,7 +160,9 @@ defmodule Thrash.Protocol.Binary do
   end
   defp value_serializer({:enum, enum_module}, var) do
     quote do
-      << unquote(enum_module).id(unquote(Macro.var(var, __MODULE__))) :: 32-unsigned >>
+      << unquote(enum_module).id(
+        unquote(Macro.var(var, __MODULE__))
+      ) :: 32-unsigned >>
     end
   end
   defp value_serializer(:i64, var) do
@@ -212,7 +217,8 @@ defmodule Thrash.Protocol.Binary do
       list_deserializer_fn = fn
         (0, {acc, rest}, _recurser) -> {Enum.reverse(acc), rest}
         (n, {acc, str}, recurser) ->
-          unquote(splice_binaries(value_matcher(type, :value), quote do: << rest :: binary >>)) = str
+          unquote(splice_binaries(value_matcher(type, :value),
+                                  quote do: << rest :: binary >>)) = str
           {value, rest} = unquote(value_mapper(type, :value, :rest))
           recurser.(n - 1, {[value | acc], rest}, recurser)
       end
@@ -227,12 +233,14 @@ defmodule Thrash.Protocol.Binary do
       set_deserializer_fn = fn
         (0, {acc, rest}, _recurser) -> {acc, rest}
         (n, {acc, str}, recurser) ->
-          unquote(splice_binaries(value_matcher(type, :value), quote do: << rest :: binary >>)) = str
+          unquote(splice_binaries(value_matcher(type, :value),
+                                  quote do: << rest :: binary >>)) = str
           {value, rest} = unquote(value_mapper(type, :value, :rest))
           recurser.(n - 1, {MapSet.put(acc, value), rest}, recurser)
       end
       set_deserializer_fn.(unquote(Macro.var(lengthvar, __MODULE__)),
-                           {MapSet.new, unquote(Macro.var(restvar, __MODULE__))},
+                           {MapSet.new,
+                            unquote(Macro.var(restvar, __MODULE__))},
                            set_deserializer_fn)
     end
   end
@@ -262,7 +270,8 @@ defmodule Thrash.Protocol.Binary do
 
   defp deserializer(nil, :final, _ix) do
     quote do
-      def deserialize_field(<< 0, remainder :: binary >>, acc), do: {acc, remainder}
+      def deserialize_field(<< 0, remainder :: binary >>,
+                            acc), do: {acc, remainder}
     end
   end
   defp deserializer(type, fieldname, ix) do
@@ -297,7 +306,8 @@ defmodule Thrash.Protocol.Binary do
   end
   defp value_matcher(:string, var) do
     quote do
-      << len :: 32-unsigned, unquote(Macro.var(var, __MODULE__)) :: size(len)-binary >>
+      << len :: 32-unsigned,
+      unquote(Macro.var(var, __MODULE__)) :: size(len)-binary >>
     end
   end
   defp value_matcher({:struct, _struct_module}, _var) do
@@ -314,11 +324,13 @@ defmodule Thrash.Protocol.Binary do
   defp value_matcher({t, of_type}, var) when t in [:list, :set] do
     # "var" will be the length of the list
     quote do
-      << unquote(Type.id(of_type)), unquote(Macro.var(var, __MODULE__)) :: 32-unsigned >>
+      << unquote(Type.id(of_type)),
+      unquote(Macro.var(var, __MODULE__)) :: 32-unsigned >>
     end
   end
   defp value_matcher(type, var) do
-    # for "simple" values, we can use the same pattern that value_serializer generates
+    # for "simple" values,
+    # we can use the same pattern that value_serializer generates
     value_serializer(type, var)
   end
 
@@ -401,8 +413,10 @@ defmodule Thrash.Protocol.Binary do
         else
           serialize_field(unquote(ix) + 1,
                           val,
-                          acc <> unquote(splice_binaries(header(type, ix),
-                                                         value_serializer(type, :value))))
+                          acc <>
+                            unquote(splice_binaries(header(type, ix),
+                                                    value_serializer(type,
+                                                                     :value))))
         end
       end
     end

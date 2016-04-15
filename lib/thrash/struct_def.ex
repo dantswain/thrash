@@ -9,10 +9,12 @@ defmodule Thrash.StructDef do
     Metadata about a struct field
     """
 
+    alias Thrash.Type
+
     defstruct(id: nil, required: nil, type: nil, name: nil, default: nil)
     @type t :: %Field{id: integer,
                       required: boolean,
-                      type: Thrash.Type.type_specifier,
+                      type: Type.type_specifier,
                       name: atom,
                       default: term}
 
@@ -29,6 +31,7 @@ defmodule Thrash.StructDef do
                          default :: term}
 
   alias Thrash.ThriftMeta
+  alias Thrash.MacroHelpers
 
   @spec find_in_thrift(atom, MacroHelpers.namespace) :: t
   def find_in_thrift(modulename, namespace) do
@@ -89,10 +92,11 @@ defmodule Thrash.StructDef do
   defp maybe_do({:error, x}, _f), do: {:error, x}
 
   defp translate_type({:struct, {_from_mod, struct_module}}, namespace) do
-    {:struct, Thrash.MacroHelpers.atom_to_elixir_module(struct_module, namespace)}
+    {:struct, MacroHelpers.atom_to_elixir_module(struct_module, namespace)}
   end
   defp translate_type({:map, from_type, to_type}, namespace) do
-    {:map, {translate_type(from_type, namespace), translate_type(to_type, namespace)}}
+    {:map, {translate_type(from_type, namespace),
+            translate_type(to_type, namespace)}}
   end
   defp translate_type({:set, of_type}, namespace) do
     {:set, translate_type(of_type, namespace)}
@@ -102,8 +106,9 @@ defmodule Thrash.StructDef do
   end
   defp translate_type(other_type, _namespace), do: other_type
 
-  defp translate_default({:struct, {_thrift_namespace, struct_module}}, _, namespace) do
-    struct_module = Thrash.MacroHelpers.atom_to_elixir_module(struct_module, namespace)
+  defp translate_default({:struct, {_thrift_namespace, struct_module}},
+                         _, namespace) do
+    struct_module = MacroHelpers.atom_to_elixir_module(struct_module, namespace)
     {:defer_struct, struct_module}
   end
   defp translate_default(:bool, :undefined, _namespace), do: false

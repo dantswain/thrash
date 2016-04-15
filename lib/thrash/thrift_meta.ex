@@ -3,6 +3,8 @@ defmodule Thrash.ThriftMeta do
   Functions to access metadata from the Thrift-generated Erlang code
   """
 
+  alias Thrash.StructDef
+
   @type finder :: ((String.t) -> {:ok, term} | {:error, term})
 
   @doc """
@@ -79,7 +81,8 @@ defmodule Thrash.ThriftMeta do
   """
   @spec thrashify_constants(Keyword.t, String.t) :: Keyword.t
   def thrashify_constants(constants, namespace) do
-    Enum.map(constants, fn({k, v}) -> {thrift_to_thrash_const(k, namespace), v} end)
+    Enum.map(constants,
+      fn({k, v}) -> {thrift_to_thrash_const(k, namespace), v} end)
   end
 
   @doc """
@@ -121,12 +124,12 @@ defmodule Thrash.ThriftMeta do
   removed from the struct_name before calling struct_info (e.g.,
   'Foo.Bar' -> 'Bar').
   """
-  @spec read_struct(String.t, atom, atom) :: {:ok, StructDef.t} | {:error, []} 
+  @spec read_struct(String.t, atom, atom) :: {:ok, StructDef.t} | {:error, []}
   def read_struct(header_file, struct_name, namespace) do
     basename = Path.basename(header_file, ".hrl")
     modulename = String.to_atom(basename)
     struct_name = last_part_of_atom_as_atom(struct_name)
-    Thrash.StructDef.read(modulename, struct_name, namespace)
+    StructDef.read(modulename, struct_name, namespace)
   end
 
   @doc """
@@ -143,11 +146,13 @@ defmodule Thrash.ThriftMeta do
     enum_name_string = last_part_of_atom_as_string(enum_name)
     full_namespace = String.upcase(namespace_string <> "_" <>
       enum_name_string <> "_")
-    
+
     header_file
     |> read_constants
     |> Enum.filter(fn({k, _v}) -> has_namespace?(k, full_namespace) end)
-    |> Enum.map(fn({k, v}) -> {thrift_to_thrash_const(k, full_namespace), v} end)
+    |> Enum.map(fn({k, v}) ->
+      {thrift_to_thrash_const(k, full_namespace), v}
+    end)
     |> Enum.into(%{})
     |> ok_if_not_empty
   end

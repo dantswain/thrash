@@ -7,7 +7,7 @@ defmodule Mix.Tasks.Compile.Thrift do
   (a required precursor for Thrash) from your Thrift IDL files (i.e.,
   `.thrift` files).  By default, `mix compile.thrift` assumes that your
   IDL files are in the `thrift` directory and that the output should go
-  in the `src` directory. 
+  in the `src` directory.
 
   The following environment variables modify the behavior of `mix
   compile.thrift`.
@@ -28,7 +28,7 @@ defmodule Mix.Tasks.Compile.Thrift do
   ```
   defmodule MyProject.Mixfile do
     use Mix.Project
-    
+
     def project do
       [app: :my_project,
       # usual stuff ..
@@ -55,7 +55,7 @@ defmodule Mix.Tasks.Compile.Thrift do
 
     input_files = thrift_files(options[:thrift_input_dir])
     output_files = generated_files(options[:thrift_output_dir])
-    
+
     if require_compile?(options[:force_thrift], input_files, output_files) do
       run_thrift(options[:thrift],
                  options[:thrift_input_dir],

@@ -38,7 +38,7 @@ defmodule Thrash.Enumerated do
     * `values/0` - Returns the list of valid integer values
     * `id/1` - Returns the integer value for a given atom
     * `atom/1` - Returns the atom value for a given integer
-  
+
   The following types are defined:
 
     * `atom_t/0` - Union of all valid atom values
@@ -51,7 +51,8 @@ defmodule Thrash.Enumerated do
   # there is probably a more idiomatic way to do a lot of this..
   defmacro __using__(opts) do
     source_module = Keyword.get(opts, :source)
-    module = MacroHelpers.determine_module_name(source_module, __CALLER__.module)
+    module = MacroHelpers.determine_module_name(source_module,
+                                                __CALLER__.module)
     build_enumerated(module)
   end
 

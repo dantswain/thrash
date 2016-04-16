@@ -1,7 +1,8 @@
 defmodule Thrash.Type do
-  @moduledoc """
-  Translation of type specifiers to Thrift type ids
-  """
+  @moduledoc false
+
+  # Translation of type specifiers to Thrift type ids
+  # Thrash internal use only
 
   @type type_specifier :: :bool |
                           :byte |

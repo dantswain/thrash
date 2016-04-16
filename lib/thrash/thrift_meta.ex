@@ -1,7 +1,8 @@
 defmodule Thrash.ThriftMeta do
-  @moduledoc """
-  Functions to access metadata from the Thrift-generated Erlang code
-  """
+  @moduledoc false
+
+  # Functions to access metadata from the Thrift-generated Erlang code
+  # Thrash internal use only
 
   alias Thrash.StructDef
 

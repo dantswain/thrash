@@ -1,13 +1,13 @@
 defmodule Thrash.StructDef do
-  @moduledoc """
-  Thrash's translation layer between the Thrift IDL and the generated
-  Elixir code.
-  """
+  @moduledoc false
+
+  # Thrash's translation layer between the Thrift IDL and the generated
+  # Elixir code.
+  # Thrash internal use only
 
   defmodule Field do
-    @moduledoc """
-    Metadata about a struct field
-    """
+    @moduledoc false
+    # Metadata about a struct field
 
     alias Thrash.Type
 

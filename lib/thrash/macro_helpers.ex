@@ -1,7 +1,8 @@
 defmodule Thrash.MacroHelpers do
-  @moduledoc """
-  Functions that are helpful for working with macros
-  """
+  @moduledoc false
+
+  # Functions that are helpful for working with macros
+  # Thrash internal use only
 
   @type escaped_module_name :: {term, list, [atom]}
   @type namespace :: nil | {atom, atom}

@@ -5,25 +5,25 @@ defmodule Thrash.Protocol.Binary do
 
   Suppose you have a Thrift file with a struct:
 
-    // in thrift file
-    struct MyStruct {
-      1: i32 id,
-      2: string name
-    }
+      // in thrift file
+      struct MyStruct {
+        1: i32 id,
+        2: string name
+      }
 
-  Create a module with a name that ends with `MyStruct` and `use` this
-  module to generate a struct, a serializer, and a deserializer.
+  Create a module in your project with a name that ends with `MyStruct` and
+  `use` this module to generate a struct, a serializer, and a deserializer.
 
-    defmodule MyApp.MyStruct do
-      use Thrash.Protocol.Binary
-    end
+      defmodule MyApp.MyStruct do
+        use Thrash.Protocol.Binary
+      end
 
   This generates a `%MyApp.MyStruct{id: nil, name: nil}` struct and
   `MyApp.MyStruct.serialize/1` and `MyApp.MyStruct.deserialize/1`
   functions.  The type signatures of these functions are as follows.
 
-    @spec serialize(%MyApp.MyStruct{}) :: binary
-    @spec deserialize(binary) :: {%MyApp.MyStruct{}, binary}
+      @spec serialize(%MyApp.MyStruct{}) :: binary
+      @spec deserialize(binary) :: {%MyApp.MyStruct{}, binary}
 
   The second output argument of `deserialize/1` is any part of the
   input string that is left over after deserialization.
@@ -79,9 +79,11 @@ defmodule Thrash.Protocol.Binary do
       generate_field_deserializers(thrift_def)
   end
 
+  @doc false
   def bool_to_byte(true), do: 1
   def bool_to_byte(false), do: 0
 
+  @doc false
   def byte_to_bool(1), do: true
   def byte_to_bool(0), do: false
 

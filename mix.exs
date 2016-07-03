@@ -37,7 +37,10 @@ defmodule Thrash.Mixfile do
       only: :bench,
       tag: "f6394871e5685aa1c7e125f198dead0c8a15e992"},
      {:exprof, "~>0.2", only: :bench},
-     {:benchwarmer, "~>0.0.2", only: :bench}]
+     {:benchwarmer, "~>0.0.2", only: :bench},
+     {:excheck, "~>0.3.0", only: :test},
+     {:triq, github: "krestenkrab/triq", only: :test}
+    ]
   end
 
   defp description do

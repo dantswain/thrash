@@ -5,6 +5,7 @@ otp_release:
 elixir:
   - 1.1.1
   - 1.2.3
+  - 1.3.1
 sudo: true
 before_script:
   - sudo apt-get update -qq

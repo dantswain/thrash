@@ -9,4 +9,12 @@ defmodule Thrash.BinaryPropertiesTest do
       sub_struct == got_sub_struct
     end
   end
+
+  property :string do
+    for_all x in binary do
+      sub_struct = %SubStruct{sub_name: x}
+      {got_sub_struct, ""} = SubStruct.deserialize(SubStruct.serialize(sub_struct))
+      sub_struct == got_sub_struct
+    end
+  end
 end

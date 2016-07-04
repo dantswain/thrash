@@ -37,18 +37,12 @@ defmodule Thrash.MacroHelpers do
       Namespace.Struct
   """
   @spec atom_to_elixir_module(atom, nil | atom) :: atom
-  def atom_to_elixir_module(atom, nil) do
-    atom
-    |> Atom.to_string
-    |> moduleize
-    |> String.to_atom
+  def atom_to_elixir_module(atom, nil) when is_atom(atom) do
+    Module.concat([atom])
   end
-  def atom_to_elixir_module(atom, namespace) do
-    atom
-    |> Atom.to_string
-    |> prepend_string_namespace(namespace)
-    |> moduleize
-    |> String.to_atom
+  def atom_to_elixir_module(atom, namespace)
+  when is_atom(atom) and is_atom(namespace) do
+    Module.concat([namespace, atom])
   end
 
   @doc """
@@ -66,18 +60,12 @@ defmodule Thrash.MacroHelpers do
   """
   @spec find_namespace(atom) :: namespace
   def find_namespace(modulename) do
-    parts = modulename
-    |> Atom.to_string
-    |> String.reverse
-    |> String.split(".", parts: 2)
-    |> Enum.map(&String.reverse/1)
-    |> Enum.map(&moduleize/1)
-    |> Enum.reject(fn(e) -> e == nil end)
-    |> Enum.map(&String.to_atom/1)
+    parts = Module.split(modulename)
 
-    case parts do
-      [_modulename] -> nil
-      [_modulename, namespace] -> namespace
+    case length(parts) do
+      1 -> nil
+      n when n > 1 ->
+        Module.concat(Enum.take(parts, n - 1))
     end
   end
 
@@ -97,20 +85,6 @@ defmodule Thrash.MacroHelpers do
     values = Enum.reverse(values)
     [a, b | rest] = values
     quoted_chained_or(rest, {:|, [], [b, a]})
-  end
-
-  defp moduleize("Elixir") do
-    nil
-  end
-  defp moduleize(modulename = "Elixir." <> _string) do
-    modulename
-  end
-  defp moduleize(string) do
-    "Elixir." <> string
-  end
-
-  defp prepend_string_namespace(module_name, namespace) do
-    (Atom.to_string(namespace) <> "." <> module_name)
   end
 
   defp quoted_chained_or([], ast) do

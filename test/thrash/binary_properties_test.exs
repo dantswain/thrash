@@ -72,7 +72,10 @@ defmodule Thrash.BinaryPropertiesTest do
       |> Enum.reduce(%{}, fn({key, sid, sname}, acc) ->
         Map.put(acc, key, %SubStruct{sub_id: sid, sub_name: sname})
       end)
-      set_of_strings = MapSet.new(set_of_strings)
+      set_of_strings = set_of_strings
+      |> Enum.reduce(MapSet.new, fn(el, acc) ->
+        MapSet.put(acc, el)
+      end)
       struct = %SimpleStruct{
         id: id,
         name: name,

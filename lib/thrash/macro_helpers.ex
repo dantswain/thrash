@@ -66,18 +66,12 @@ defmodule Thrash.MacroHelpers do
   """
   @spec find_namespace(atom) :: namespace
   def find_namespace(modulename) do
-    parts = modulename
-    |> Atom.to_string
-    |> String.reverse
-    |> String.split(".", parts: 2)
-    |> Enum.map(&String.reverse/1)
-    |> Enum.map(&moduleize/1)
-    |> Enum.reject(fn(e) -> e == nil end)
-    |> Enum.map(&String.to_atom/1)
+    parts = Module.split(modulename)
 
-    case parts do
-      [_modulename] -> nil
-      [_modulename, namespace] -> namespace
+    case length(parts) do
+      1 -> nil
+      n when n > 1 ->
+        Module.concat(Enum.take(parts, n - 1))
     end
   end
 

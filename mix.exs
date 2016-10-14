@@ -16,7 +16,7 @@ defmodule Thrash.Mixfile do
   end
 
   def application do
-    [applications: [:logger, :quaff]]
+    [applications: [:logger, :thrift]]
   end
 
   def elixirc_paths(:bench), do: ["lib", "bench"]
@@ -24,18 +24,11 @@ defmodule Thrash.Mixfile do
   def elixirc_paths(_), do: ["lib"]
 
   defp deps do
-    [{:quaff,
-      github: "qhool/quaff",
-      tag: "9a4ba378d470beac708e366dc9bacd5a9ef6f016",
-      override: true},
-     {:earmark, "~> 0.1", only: :dev},
+    [{:earmark, "~> 0.1", only: :dev},
+     {:thrift, "~> 1.3"},
      {:ex_doc, "~> 0.11", only: :dev},
      {:dialyze, "~> 0.2", only: :dev},
      {:credo, "~> 0.3", only: :dev},
-     {:thrift_ex,
-      github: "dantswain/thrift_ex",
-      only: :bench,
-      tag: "f6394871e5685aa1c7e125f198dead0c8a15e992"},
      {:exprof, "~>0.2", only: :bench},
      {:benchwarmer, "~>0.0.2", only: :bench}]
   end

@@ -31,3 +31,5 @@ struct SimpleStruct {
   13: map<string, SubStruct> map_string_to_struct
   14: set<string> set_of_strings
 }
+
+const SubStruct const_substruct = {"sub_id": 9, "sub_name": "number 9"}

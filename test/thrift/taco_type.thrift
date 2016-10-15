@@ -1,0 +1,7 @@
+enum TacoType {
+  BARBACOA = 123,
+  CARNITAS = 124,
+  STEAK = 125,
+  CHICKEN = 126,
+  PASTOR = 127
+}

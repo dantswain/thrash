@@ -8,6 +8,21 @@ defmodule Thrash.ThriftMeta do
 
   @type finder :: ((String.t) -> {:ok, term} | {:error, term})
 
+  def parse_idl do
+    parse_idl(Application.get_env(:thrash, :idl_files))
+  end
+
+  def parse_idl(junk) when junk == [] or is_nil(junk) do
+    raise ArgumentError, message: "No IDL files found."
+  end
+  def parse_idl(idl_files) do
+    idl_files
+    |> Enum.reduce(%Thrift.Parser.Models.Schema{}, fn(path, full_schema) ->
+      file_idl = Thrift.Parser.parse(File.read!(path))
+      merge_idls(full_schema, file_idl)
+    end)
+  end
+
   @doc """
   Determine namespace from constants header file name
 
@@ -24,10 +39,9 @@ defmodule Thrash.ThriftMeta do
   @doc """
   Read constants from a thrift IDL file
   """
-  @spec read_constants(String.t) :: Keyword.t
-  def read_constants(idl_file) do
-    idl_file
-    |> parse_idl
+  @spec read_constants(Thrift.Parser.Models.Schema.t) :: Keyword.t
+  def read_constants(idl) do
+    idl
     |> Map.get(:constants)
     |> Enum.map(fn({_k, v}) ->
       {v.name, v.value}
@@ -69,16 +83,9 @@ defmodule Thrash.ThriftMeta do
   enum name is upcased before search, and only the last part of the
   atom is used (e.g., `MyApp.Things` becomes `THINGS`)
   """
-  @spec read_enum(String.t, atom) :: {:ok, map} | {:error, map}
-  def read_enum(idl_file, enum_name) do
-    basename = Path.basename(idl_file, ".thrift")
-    namespace_string = String.replace(basename, ~r/_types$/, "")
-    enum_name_string = last_part_of_atom_as_string(enum_name)
-    full_namespace = String.upcase(namespace_string <> "_" <>
-      enum_name_string <> "_")
-
-    idl = parse_idl(idl_file)
-
+  @spec read_enum(Thrift.Parser.Models.Schema.t, atom)
+  :: {:ok, map} | {:error, map}
+  def read_enum(idl, enum_name) do
     enum = idl.enums
     |> Enum.find(fn({_, enum}) -> name_match?(enum.name, enum_name) end)
 
@@ -88,7 +95,7 @@ defmodule Thrash.ThriftMeta do
       {_, enum} = enum
       enum.values
       |> Enum.map(fn({k, v}) ->
-        {thrift_to_thrash_const(k, full_namespace), v}
+        {thrift_to_thrash_const(k), v}
       end)
       |> Enum.into(%{})
     end
@@ -127,10 +134,9 @@ defmodule Thrash.ThriftMeta do
       String.downcase(last_part_of_atom_as_string(n2))
   end
   
-  defp thrift_to_thrash_const(k, namespace) do
+  defp thrift_to_thrash_const(k) do
     k
     |> Atom.to_string
-    |> String.replace(~r/^#{namespace}/, "")
     |> String.downcase
     |> String.to_atom
   end
@@ -169,7 +175,34 @@ defmodule Thrash.ThriftMeta do
 #    |> (&(Path.join(dir, &1 <> ".hrl"))).()
 #  end
 
-  defp parse_idl(idl_file) do
-    Thrift.Parser.parse(File.read!(idl_file))
+  defp merge_idls(
+    accum = %Thrift.Parser.Models.Schema{},
+    el = %Thrift.Parser.Models.Schema{}) do
+    %{accum |
+      constants: merge_maps(accum.constants, el.constants),
+      enums: merge_maps(accum.enums, el.enums),
+      exceptions: merge_maps(accum.exceptions, el.exceptions),
+      includes: merge_includes(accum.includes, el.includes),
+      namespaces: merge_maps(accum.namespaces, el.namespaces),
+      services: merge_maps(accum.services, el.services),
+      structs: merge_maps(accum.structs, el.structs),
+      thrift_namespace: merge_namespaces(accum.thrift_namespace, el.thrift_namespace),
+      typedefs: merge_maps(accum.typedefs, el.typedefs),
+      unions: merge_maps(accum.unions, el.unions)
+    }
+  end
+
+  defp merge_maps(m1, m2) do
+    Map.merge(m1, m2)
+  end
+
+  defp merge_includes(i1, i2) do
+    i1 ++ i2
+  end
+
+  defp merge_namespaces(nil, nil), do: nil
+  defp merge_namespaces(s1, s2) do
+    IO.puts("NAMESPACES: #{inspect s1} #{inspect s2}")
+    s2
   end
 end

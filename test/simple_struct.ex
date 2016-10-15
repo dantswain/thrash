@@ -2,14 +2,14 @@ defmodule TacoType do
   use Thrash.Enumerated
 end
 
-#defmodule TacoFlavor do
-#  use Thrash.Enumerated, source: TacoType
-#end
-#
-#defmodule SubStruct do
-#  use Thrash.Protocol.Binary
-#end
-#
+defmodule TacoFlavor do
+  use Thrash.Enumerated, source: TacoType
+end
+
+defmodule SubStruct do
+  use Thrash.Protocol.Binary
+end
+
 #defmodule Constants do
 #  use Thrash.Constants
 #end

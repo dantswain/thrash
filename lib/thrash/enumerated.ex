@@ -113,9 +113,9 @@ defmodule Thrash.Enumerated do
   end
 
   defp find_in_thrift(modname) do
-    ThriftMeta.find_in_thrift(fn(h) ->
-      ThriftMeta.read_enum(h, modname)
-    end, :enum_not_found)
+    idl = ThriftMeta.parse_idl
+    {:ok, map} = ThriftMeta.read_enum(ThriftMeta.parse_idl, modname)
+    map
   end
 
   defp reverse_kv(kv) do

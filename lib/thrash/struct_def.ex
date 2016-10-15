@@ -35,16 +35,27 @@ defmodule Thrash.StructDef do
 
   @spec find_in_thrift(atom, MacroHelpers.namespace) :: t
   def find_in_thrift(modulename, namespace) do
-    ThriftMeta.find_in_thrift(fn(h) ->
-      ThriftMeta.read_struct(h, modulename, namespace)
-    end, :struct_not_found)
+    idl = Thrash.ThriftMeta.parse_idl
+    modulename = Thrash.ThriftMeta.last_part_of_atom_as_atom(modulename)
+    {:ok, struct_def} = read(idl, modulename, namespace)
+    struct_def
   end
 
-  @spec read(atom, atom, MacroHelpers.namespace) :: {:ok, t} | {:error, []}
-  def read(modulename, struct_name, namespace) do
+  @spec read(Thrift.Parser.Models.Schema.t, atom, MacroHelpers.namespace) :: {:ok, t} | {:error, []}
+  def read(idl, struct_name, namespace) do
     struct_name
-    |> try_reading_struct_from(modulename)
-    |> maybe_do(fn(struct_info) -> from_struct_info(namespace, struct_info) end)
+    |> try_reading_struct_from(idl)
+    |> maybe_do(fn(struct_info) -> from_thrift_struct(namespace, struct_info) end)
+  end
+
+  def from_thrift_struct(namespace, %Thrift.Parser.Models.Struct{fields: fields}) do
+    Enum.map(fields, fn(field) ->
+      %Field{id: field.id,
+             required: undefined_to_nil(field.required),
+             type: translate_type(field.type, namespace),
+             name: field.name,
+             default: translate_default(field.type, field.default, namespace)}
+    end)
   end
 
   @spec from_struct_info(MacroHelpers.namespace, {:struct, [thrift_field]}) :: t
@@ -94,6 +105,9 @@ defmodule Thrash.StructDef do
   defp translate_type({:struct, {_from_mod, struct_module}}, namespace) do
     {:struct, MacroHelpers.atom_to_elixir_module(struct_module, namespace)}
   end
+  defp translate_type(%Thrift.Parser.Models.StructRef{referenced_type: struct_module}, namespace) do
+    {:struct, MacroHelpers.atom_to_elixir_module(struct_module, namespace)}
+  end
   defp translate_type({:map, from_type, to_type}, namespace) do
     {:map, {translate_type(from_type, namespace),
             translate_type(to_type, namespace)}}
@@ -111,19 +125,19 @@ defmodule Thrash.StructDef do
     struct_module = MacroHelpers.atom_to_elixir_module(struct_module, namespace)
     {:defer_struct, struct_module}
   end
-  defp translate_default(:bool, :undefined, _namespace), do: false
-  defp translate_default({:map, _, _}, :undefined, _namespace), do: %{}
+  defp translate_default(:bool, nil, _namespace), do: false
+  defp translate_default({:map, _, _}, nil, _namespace), do: %{}
   defp translate_default({:map, _, _}, default_map, _namespace) do
     default_map
     |> :dict.to_list
     |> Enum.into(%{})
   end
-  defp translate_default({:set, _}, :undefined, _namespace), do: MapSet.new
+  defp translate_default({:set, _}, nil, _namespace), do: MapSet.new
   defp translate_default({:set, _}, default_set, _namespace) do
     :sets.fold(fn(el, acc) -> MapSet.put(acc, el) end, MapSet.new, default_set)
   end
-  defp translate_default({:list, _}, :undefined, _namespace), do: []
-  defp translate_default(_, :undefined, _namespace), do: nil
+  defp translate_default({:list, _}, nil, _namespace), do: []
+  defp translate_default(_, nil, _namespace), do: nil
   defp translate_default(_, default, _namespace), do: default
 
   defp undefined_to_nil(:undefined), do: nil
@@ -154,12 +168,10 @@ defmodule Thrash.StructDef do
     default
   end
 
-  defp try_reading_struct_from(struct_name, modulename) do
-    try do
-      {:ok, modulename.struct_info_ext(struct_name)}
-    rescue
-      _e in FunctionClauseError ->
-        {:error, []}
+  defp try_reading_struct_from(struct_name, idl) do
+    case Map.get(idl.structs, struct_name) do
+      nil -> {:error, []}
+      struct_def -> {:ok, struct_def}
     end
   end
 end

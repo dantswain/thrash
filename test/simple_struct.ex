@@ -18,7 +18,7 @@ end
 #  use Thrash.Protocol.Binary, defaults: [taco_pref: :chicken],
 #                              types: [taco_pref: {:enum, TacoType}]
 #end
-#
+
 #defmodule InnerStruct do
 #  use Thrash.Protocol.Binary, source: SubStruct
 #end

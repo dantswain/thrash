@@ -60,22 +60,6 @@ defmodule Thrash.ThriftMeta do
 #      fn({k, v}) -> {thrift_to_thrash_const(k, namespace), v} end)
 #  end
 
-#  @doc """
-#  Read a struct definition from a header file.
-#
-#  Uses the header name to determine the underlying module name (e.g.,
-#  'foo.hrl' -> ':foo') and calls struct_info.  Any namespace module is
-#  removed from the struct_name before calling struct_info (e.g.,
-#  'Foo.Bar' -> 'Bar').
-#  """
-#  @spec read_struct(String.t, atom, atom) :: {:ok, StructDef.t} | {:error, []}
-#  def read_struct(header_file, struct_name, namespace) do
-#    basename = Path.basename(header_file, ".hrl")
-#    modulename = String.to_atom(basename)
-#    struct_name = last_part_of_atom_as_atom(struct_name)
-#    StructDef.read(modulename, struct_name, namespace)
-#  end
-#
   @doc """
   Read an enum definition from thrift IDL file
 
@@ -148,7 +132,7 @@ defmodule Thrash.ThriftMeta do
     |> List.last
   end
 
-  defp last_part_of_atom_as_atom(x) do
+  def last_part_of_atom_as_atom(x) do
     x
     |> last_part_of_atom_as_string
     |> String.to_atom

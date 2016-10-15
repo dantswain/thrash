@@ -17,6 +17,10 @@ defmodule Thrash.StructDefTest do
     substruct = Enum.at(struct_def, 4)
     assert :sub_struct == substruct.name
     assert {:struct, SubStruct} == substruct.type
+
+    map = Enum.at(struct_def, 12)
+    assert :map_string_to_struct == map.name
+    assert {:map, {:string, {:struct, SubStruct}}} == map.type
   end
 
   #test "building a struct with substructs that are namespaced" do

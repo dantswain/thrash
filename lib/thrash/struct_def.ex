@@ -102,13 +102,14 @@ defmodule Thrash.StructDef do
   end
   defp maybe_do({:error, x}, _f), do: {:error, x}
 
+  defp translate_type(:i8, _namespace), do: :byte
   defp translate_type({:struct, {_from_mod, struct_module}}, namespace) do
     {:struct, MacroHelpers.atom_to_elixir_module(struct_module, namespace)}
   end
   defp translate_type(%Thrift.Parser.Models.StructRef{referenced_type: struct_module}, namespace) do
     {:struct, MacroHelpers.atom_to_elixir_module(struct_module, namespace)}
   end
-  defp translate_type({:map, from_type, to_type}, namespace) do
+  defp translate_type({:map, {from_type, to_type}}, namespace) do
     {:map, {translate_type(from_type, namespace),
             translate_type(to_type, namespace)}}
   end
@@ -118,7 +119,9 @@ defmodule Thrash.StructDef do
   defp translate_type({:list, of_type}, namespace) do
     {:list, translate_type(of_type, namespace)}
   end
-  defp translate_type(other_type, _namespace), do: other_type
+  defp translate_type(other_type, _namespace) do
+    other_type
+  end
 
   defp translate_default({:struct, {_thrift_namespace, struct_module}},
                          _, namespace) do

@@ -36,6 +36,7 @@ defmodule Thrash.StructDef do
   @spec find_in_thrift(atom, MacroHelpers.namespace) :: t
   def find_in_thrift(modulename, namespace) do
     idl = Thrash.ThriftMeta.parse_idl
+    IO.inspect(idl)
     modulename = Thrash.ThriftMeta.last_part_of_atom_as_atom(modulename)
     {:ok, struct_def} = read(idl, modulename, namespace)
     struct_def
@@ -123,7 +124,7 @@ defmodule Thrash.StructDef do
     other_type
   end
 
-  defp translate_default({:struct, {_thrift_namespace, struct_module}},
+  defp translate_default(%Thrift.Parser.Models.StructRef{referenced_type: struct_module},
                          _, namespace) do
     struct_module = MacroHelpers.atom_to_elixir_module(struct_module, namespace)
     {:defer_struct, struct_module}

@@ -49,16 +49,16 @@ defmodule Thrash.ThriftMeta do
     |> Enum.into(%{})
   end
 
-#  @doc """
-#  Convert Thrift constant names to Elixir-friendly names
-#
-#  e.g., `[FOO_THING: 42], "FOO_"` -> `[thing: 42]`
-#  """
-#  @spec thrashify_constants(Keyword.t, String.t) :: Keyword.t
-#  def thrashify_constants(constants, namespace) do
-#    Enum.map(constants,
-#      fn({k, v}) -> {thrift_to_thrash_const(k, namespace), v} end)
-#  end
+  @doc """
+  Convert Thrift constant names to Elixir-friendly names
+
+  e.g., `[FOO_THING: 42], "FOO_"` -> `[thing: 42]`
+  """
+  @spec thrashify_constants(Keyword.t) :: Keyword.t
+  def thrashify_constants(constants) do
+    Enum.map(constants,
+      fn({k, v}) -> {thrift_to_thrash_const(k), v.value} end)
+  end
 
   @doc """
   Read an enum definition from thrift IDL file

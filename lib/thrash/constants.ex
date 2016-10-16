@@ -21,15 +21,9 @@ defmodule Thrash.Constants do
   alias Thrash.ThriftMeta
 
   defmacro __using__(_opts \\ []) do
-    constants = ThriftMeta.erl_gen_path
-    |> ThriftMeta.constants_headers
-    |> Enum.map(fn(header) ->
-      namespace = ThriftMeta.constants_namespace(header)
-
-      header
-      |> ThriftMeta.read_constants_exclusive
-      |> ThriftMeta.thrashify_constants(namespace)
-    end)
+    constants = ThriftMeta.parse_idl
+    |> Map.get(:constants)
+    |> ThriftMeta.thrashify_constants
     |> List.flatten
 
     Enum.map(constants, fn({k, v}) ->

@@ -23,15 +23,32 @@ defmodule Thrash.StructDefTest do
     assert {:map, {:string, {:struct, SubStruct}}} == map.type
   end
 
-  #test "building a struct with substructs that are namespaced" do
-  #  struct = %Namespaced.SimpleStruct{}
-  #  sub_struct = %Namespaced.SubStruct{}
-  #  assert sub_struct == struct.sub_struct
+  test "expanding a struct def" do
+    IO.inspect Thrash.StructDef.find_in_thrift(SimpleStruct, nil)
 
-  #  serialized = Namespaced.SimpleStruct.serialize(struct)
-  #  {deserialized, ""} = Namespaced.SimpleStruct.deserialize(serialized)
-  #  assert struct == deserialized
-  #end
+    struct_def = SimpleStruct
+    |> Thrash.StructDef.find_in_thrift(nil)
+    |> Thrash.StructDef.override_types([])
+    |> Thrash.StructDef.override_defaults([])
+    |> Thrash.StructDef.to_defstruct
+    IO.inspect(struct_def)
+
+    assert [] == Keyword.get(struct_def, :list_of_ints)
+    assert MapSet.new == Keyword.get(struct_def, :set_of_strings)
+    assert %{} == Keyword.get(struct_def, :map_string_to_struct)
+  end
+
+  test "building a struct with substructs that are namespaced" do
+    IO.inspect(Thrash.StructDef.find_in_thrift(SimpleStruct, Namespaced))
+    IO.inspect(Thrash.StructDef.find_in_thrift(Namespaced.SimpleStruct, nil))
+    struct = %Namespaced.SimpleStruct{}
+    sub_struct = %Namespaced.SubStruct{}
+    assert sub_struct == struct.sub_struct
+
+    serialized = Namespaced.SimpleStruct.serialize(struct)
+    {deserialized, ""} = Namespaced.SimpleStruct.deserialize(serialized)
+    assert struct == deserialized
+  end
 
   #test "building a struct with a source works (simple case)" do
   #  # really would just fail to compile if this did not work

@@ -4,6 +4,14 @@ defmodule Thrash.ThriftMetaTest do
   @idl_pattern Path.expand("../thrift", __DIR__) <> "**/*.thrift"
   @idl_files Path.wildcard(@idl_pattern)
 
+  setup do
+    existing_idl = Application.get_env(:thrash, :idl_files)
+
+    on_exit fn ->
+      Application.put_env(:thrash, :idl_files, existing_idl)
+    end
+  end
+
   test "read_constants works" do
     idl = Thrash.ThriftMeta.parse_idl(@idl_files)
 

@@ -14,5 +14,4 @@ before_script:
 script:
   - cd $TRAVIS_BUILD_DIR
   - mix compile
-  - THRIFT='docker run -v "$PWD:/thrash" -w /thrash thrift:0.9.3 thrift' THRIFT_INPUT_DIR=test/ mix compile.thrift
   - mix test

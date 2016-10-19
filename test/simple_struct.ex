@@ -19,14 +19,14 @@ defmodule SimpleStruct do
                               types: [taco_pref: {:enum, TacoType}]
 end
 
-#defmodule InnerStruct do
-#  use Thrash.Protocol.Binary, source: SubStruct
-#end
-#
-#defmodule OuterStruct do
-#  use Thrash.Protocol.Binary, source: SimpleStruct,
-#                              defaults: [taco_pref: :chicken,
-#                                         sub_struct: %InnerStruct{}],
-#                              types: [taco_pref: {:enum, TacoType},
-#                                      sub_struct: {:struct, InnerStruct}]
-#end
+defmodule InnerStruct do
+  use Thrash.Protocol.Binary, source: SubStruct
+end
+
+defmodule OuterStruct do
+  use Thrash.Protocol.Binary, source: SimpleStruct,
+                              defaults: [taco_pref: :chicken,
+                                         sub_struct: %InnerStruct{}],
+                              types: [taco_pref: {:enum, TacoType},
+                                      sub_struct: {:struct, InnerStruct}]
+end

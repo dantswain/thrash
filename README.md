@@ -128,15 +128,6 @@ usage details.  Note, both of these mixins accept a `source` argument
 to allow you to manually define the source structure in your Thrift
 IDL.
 
-## Mix.Tasks.Compile.Thrift
-
-Thrash provides the `compile.thrift` mix task to help with compiling
-Elixir projects that use Thrift and Thrash.
-
-See [lib/mix/tasks/compile/thrift.ex](lib/mix/tasks/compile/thrift.ex)
-for detailed documentation of the compile task, including how to
-modify your mix.exs file so that this task runs automatically.
-
 ## Data Types
 
 Thrift data types are mapped to Elixir as follows.
@@ -238,11 +229,7 @@ source from the test thrift file.
 ```
 # fetch deps
 mix deps.fetch
-# make sure the compile.thrift task is available
 mix compile
-# compile thrift
-THRIFT_INPUT_DIR=test/ mix compile.thrift
-# now tests should work
 mix test
 ```
 

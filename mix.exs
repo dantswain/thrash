@@ -6,7 +6,7 @@ defmodule Thrash.Mixfile do
      version: "0.1.0",
      description: description,
      package: package,
-     elixir: "~> 1.1",
+     elixir: "~> 1.2",
      source_url: "https://github.com/dantswain/thrash",
      docs: [main: "Thrash"],
      build_embedded: Mix.env == :prod,

@@ -24,14 +24,11 @@ defmodule Thrash.StructDefTest do
   end
 
   test "expanding a struct def" do
-    IO.inspect Thrash.StructDef.find_in_thrift(SimpleStruct, nil)
-
     struct_def = SimpleStruct
     |> Thrash.StructDef.find_in_thrift(nil)
     |> Thrash.StructDef.override_types([])
     |> Thrash.StructDef.override_defaults([])
     |> Thrash.StructDef.to_defstruct
-    IO.inspect(struct_def)
 
     assert [] == Keyword.get(struct_def, :list_of_ints)
     assert MapSet.new == Keyword.get(struct_def, :set_of_strings)
@@ -39,8 +36,6 @@ defmodule Thrash.StructDefTest do
   end
 
   test "building a struct with substructs that are namespaced" do
-    IO.inspect(Thrash.StructDef.find_in_thrift(SimpleStruct, Namespaced))
-    IO.inspect(Thrash.StructDef.find_in_thrift(Namespaced.SimpleStruct, nil))
     struct = %Namespaced.SimpleStruct{}
     sub_struct = %Namespaced.SubStruct{}
     assert sub_struct == struct.sub_struct

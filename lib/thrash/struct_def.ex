@@ -36,7 +36,6 @@ defmodule Thrash.StructDef do
   @spec find_in_thrift(atom, MacroHelpers.namespace) :: t
   def find_in_thrift(modulename, namespace) do
     idl = Thrash.ThriftMeta.parse_idl
-    IO.inspect(idl)
     modulename = Thrash.ThriftMeta.last_part_of_atom_as_atom(modulename)
     {:ok, struct_def} = read(idl, modulename, namespace)
     struct_def
@@ -130,8 +129,8 @@ defmodule Thrash.StructDef do
     {:defer_struct, struct_module}
   end
   defp translate_default(:bool, nil, _namespace), do: false
-  defp translate_default({:map, _, _}, nil, _namespace), do: %{}
-  defp translate_default({:map, _, _}, default_map, _namespace) do
+  defp translate_default({:map, {_, _}}, nil, _namespace), do: %{}
+  defp translate_default({:map, {_, _}}, default_map, _namespace) do
     default_map
     |> :dict.to_list
     |> Enum.into(%{})
@@ -166,7 +165,11 @@ defmodule Thrash.StructDef do
   end
 
   defp collapse_deferred_defaults({:defer_struct, struct_module}) do
-    struct_module.__struct__
+    if :erlang.function_exported(struct_module, :__struct__, 0) do
+      struct_module.__struct__
+    else
+      nil
+    end
   end
   defp collapse_deferred_defaults(default) do
     default

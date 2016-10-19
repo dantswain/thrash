@@ -86,32 +86,6 @@ defmodule Thrash.ThriftMeta do
     |> ok_if_not_empty
   end
 
-  @doc """
-  Finds a value in thrift-generated Erlang code.
-
-  Iterates over the thrift headers, executes finder, returns the first
-  value for which finder returns `{:ok, value}`.  If no result is
-  found, error_value is returned.
-  """
-  @spec find_in_thrift(finder, term) :: term
-  def find_in_thrift(finder, error_value \\ nil) do
-    nil
-    #headers = types_headers(erl_gen_path())
-    #Enum.find_value(headers, error_value, fn(h) ->
-    #  case finder.(h) do
-    #    {:ok, val} -> val
-    #    {:error, _} -> nil
-    #  end
-    #end)
-  end
-
-#  defp has_namespace?(atom, namespace) do
-#    atom
-#    |> Atom.to_string
-#    |> String.starts_with?(namespace)
-#  end
-#
-
   defp name_match?(n1, n1), do: true
   defp name_match?(n1, n2) do
     String.downcase(last_part_of_atom_as_string(n1)) ==
@@ -140,24 +114,6 @@ defmodule Thrash.ThriftMeta do
 
   defp ok_if_not_empty(m) when m == %{}, do: {:error, %{}}
   defp ok_if_not_empty(m) when is_map(m), do: {:ok, m}
-
-#  defp is_included_lib?({k, :yeah}) do
-#    # with a value of :yeah, it's probably an included tag
-#    # but we should be careful
-#    String.match?(Atom.to_string(k), ~r/^_.*_included$/)
-#  end
-#  defp is_included_lib?({_k, _v}), do: false
-#
-#  defp is_not_included_lib?(x) do
-#    !is_included_lib?(x)
-#  end
-#
-#  defp included_tag_to_header(tag, dir) do
-#    tag
-#    |> Atom.to_string
-#    |> String.replace(~r/^_(.*)_included$/, "\\1")
-#    |> (&(Path.join(dir, &1 <> ".hrl"))).()
-#  end
 
   defp merge_idls(
     accum = %Thrift.Parser.Models.Schema{},

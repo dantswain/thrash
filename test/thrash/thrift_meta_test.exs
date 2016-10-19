@@ -15,10 +15,9 @@ defmodule Thrash.ThriftMetaTest do
   test "read_constants works" do
     idl = Thrash.ThriftMeta.parse_idl(@idl_files)
 
-    # FIXME
-    expected = %{MAX_THINGS: 42,
-                 const_substruct: [{'sub_id', 9}, {'sub_name', 'number 9'}]}
-    got = Thrash.ThriftMeta.read_constants(idl)
+    expected = %{max_things: 42,
+                 const_substruct: %SubStruct{sub_id: 9, sub_name: "number 9"}}
+    got = Thrash.ThriftMeta.read_constants(idl, nil)
 
     assert expected == got
   end

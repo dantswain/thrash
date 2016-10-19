@@ -39,13 +39,11 @@ defmodule Thrash.ThriftMeta do
   @doc """
   Read constants from a thrift IDL file
   """
-  @spec read_constants(Thrift.Parser.Models.Schema.t) :: Keyword.t
-  def read_constants(idl) do
+  @spec read_constants(Thrift.Parser.Models.Schema.t, Module.t | nil) :: Keyword.t
+  def read_constants(idl, namespace) do
     idl
     |> Map.get(:constants)
-    |> Enum.map(fn({_k, v}) ->
-      {v.name, v.value}
-    end)
+    |> thrashify_constants(idl, namespace)
     |> Enum.into(%{})
   end
 
@@ -54,11 +52,53 @@ defmodule Thrash.ThriftMeta do
 
   e.g., `[FOO_THING: 42], "FOO_"` -> `[thing: 42]`
   """
-  @spec thrashify_constants(Keyword.t) :: Keyword.t
-  def thrashify_constants(constants) do
+  @spec thrashify_constants(Keyword.t, Thrift.Parser.Models.Schema.t, Module.t | nil) :: Keyword.t
+  def thrashify_constants(constants, idl, namespace) do
     Enum.map(constants,
-      fn({k, v}) -> {thrift_to_thrash_const(k), v.value} end)
+      fn({k, v}) ->
+        {thrift_to_thrash_const(k), translate_constant(v, idl, namespace)}
+      end)
   end
+
+  defp translate_constant(
+    %Thrift.Parser.Models.Constant{
+      type: %Thrift.Parser.Models.StructRef{referenced_type: referenced_type},
+      value: value
+    },
+    idl,
+    namespace
+    ) do
+    struct_module = Thrash.MacroHelpers.atom_to_elixir_module(referenced_type, namespace)
+    struct = struct_module.__struct__
+    struct_def = find_struct(referenced_type, idl)
+    Enum.reduce(value, struct, fn({k, v}, acc) ->
+      k = List.to_atom(k)
+      Map.update!(acc, k, fn(_) ->
+        translate_value(v, k, struct_def)
+      end)
+    end)
+  end
+  defp translate_constant(%Thrift.Parser.Models.Constant{value: value}, _, _) do
+    value
+  end
+
+  defp find_struct(name, idl) do
+    Map.get(idl, :structs) |> Map.get(name)
+  end
+
+  defp translate_value(v, k, %Thrift.Parser.Models.Struct{fields: fields}) do
+    field_def = find_field(fields, k)
+    translate_value(v, field_def.type)
+  end
+
+  defp find_field(fields, k) do
+    Enum.find(fields, fn(f) -> f.name == k end)
+  end
+
+  defp translate_value(list_string, :string) do
+    List.to_string(list_string)
+  end
+  defp translate_value(v, _), do: v
 
   @doc """
   Read an enum definition from thrift IDL file

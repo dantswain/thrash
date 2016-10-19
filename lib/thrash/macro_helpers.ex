@@ -87,6 +87,54 @@ defmodule Thrash.MacroHelpers do
     quoted_chained_or(rest, {:|, [], [b, a]})
   end
 
+  @doc """
+  Ensure that a value is quoted.
+
+  Useful for, e.g., converting maps and structs to quoted values
+  """
+  @spec ensure_quoted_value(term) :: Macro.t
+  def ensure_quoted_value(s = %{__struct__: struct_name}) do
+    {
+      :%,
+      [line: __ENV__.line],
+      [
+        {
+          :__aliases__,
+          [alias: false],
+          [unelixir_atom(struct_name)]
+        },
+        ensure_quoted_value(Map.from_struct(s))
+      ]
+    }
+  end
+  def ensure_quoted_value(m) when is_map(m) do
+    {
+      :%{},
+      [line: __ENV__.line],
+      m |> Enum.into([]) |> Enum.map(&ensure_quoted_value/1)
+    }
+  end
+  def ensure_quoted_value(m), do: m
+
+  @doc """
+  Convert an elixir module to an atom (without the Elixir prefix)
+  """
+  @spec unelixir_atom(atom) :: atom
+  def unelixir_atom(module_name) do
+    parts = module_name
+    |> Atom.to_string
+    |> String.split(".")
+    
+    unelixired_parts = case parts do
+                         ["Elixir" | rest] -> rest
+                         other -> other
+                       end
+
+    unelixired_parts
+    |> Enum.join(".")
+    |> String.to_atom
+  end
+
   defp quoted_chained_or([], ast) do
     ast
   end

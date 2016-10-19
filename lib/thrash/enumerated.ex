@@ -60,7 +60,7 @@ defmodule Thrash.Enumerated do
     # if you get ":enum_not_found" here, it indicates that the enum
     # you were looking for does not exist in the thrift-generated
     # erlang code
-    quoted_map = module |> find_in_thrift |> ensure_quoted
+    quoted_map = module |> find_in_thrift |> MacroHelpers.ensure_quoted_value
     map_keys = get_keys(quoted_map)
     map_values = get_values(quoted_map)
     reversed = build_reverse(quoted_map)
@@ -113,7 +113,6 @@ defmodule Thrash.Enumerated do
   end
 
   defp find_in_thrift(modname) do
-    idl = ThriftMeta.parse_idl
     {:ok, map} = ThriftMeta.read_enum(ThriftMeta.parse_idl, modname)
     map
   end
@@ -121,11 +120,6 @@ defmodule Thrash.Enumerated do
   defp reverse_kv(kv) do
     Enum.map(kv, fn({k, v}) -> {v, k} end)
   end
-
-  defp ensure_quoted(m) when is_map(m) do
-    {:%{}, [line: __ENV__.line], Enum.into(m, [])}
-  end
-  defp ensure_quoted(m), do: m
 
   defp build_reverse({:%{}, line, kv}) do
     {:%{}, line, reverse_kv(kv)}

@@ -19,6 +19,7 @@ defmodule Thrash.Constants do
   """
 
   alias Thrash.ThriftMeta
+  alias Thrash.MacroHelpers
 
   defmacro __using__(_opts \\ []) do
     caller = __CALLER__.module
@@ -28,24 +29,9 @@ defmodule Thrash.Constants do
     |> ThriftMeta.read_constants(caller_namespace)
 
     Enum.map(constants, fn({k, v}) ->
-      defconst(k, ensure_quoted(v))
+      defconst(k, MacroHelpers.ensure_quoted_value(v))
     end)
   end
-
-  defp ensure_quoted(s = %{__struct__: struct_name}) do
-    {
-      :%,
-      [line: __ENV__.line],
-      [
-        {:__aliases__, [alias: false], [ThriftMeta.last_part_of_atom_as_atom(struct_name)]},
-        {:%{}, [line: __ENV__.line], s |> Map.from_struct |> Enum.into([]) |> Enum.map(&ensure_quoted/1)}
-      ]
-    }
-  end
-  defp ensure_quoted(m) when is_map(m) do
-    {:%{}, [line: __ENV__.line], Enum.into(m, [])}
-  end
-  defp ensure_quoted(m), do: m
 
   defp defconst(k, v) do
     quote do

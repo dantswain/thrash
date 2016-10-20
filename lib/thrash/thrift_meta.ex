@@ -107,14 +107,13 @@ defmodule Thrash.ThriftMeta do
   enum name is upcased before search, and only the last part of the
   atom is used (e.g., `MyApp.Things` becomes `THINGS`)
   """
-  @spec read_enum(Thrift.Parser.Models.Schema.t, atom)
-  :: {:ok, map} | {:error, map}
+  @spec read_enum(Thrift.Parser.Models.Schema.t, atom) :: map
   def read_enum(idl, enum_name) do
     enum = idl.enums
     |> Enum.find(fn({_, enum}) -> name_match?(enum.name, enum_name) end)
 
     if enum == nil do
-      %{}
+      raise ArgumentError, message: "Could not find enum #{inspect enum_name}"
     else
       {_, enum} = enum
       enum.values
@@ -123,7 +122,6 @@ defmodule Thrash.ThriftMeta do
       end)
       |> Enum.into(%{})
     end
-    |> ok_if_not_empty
   end
 
   defp name_match?(n1, n1), do: true
@@ -151,9 +149,6 @@ defmodule Thrash.ThriftMeta do
     |> last_part_of_atom_as_string
     |> String.to_atom
   end
-
-  defp ok_if_not_empty(m) when m == %{}, do: {:error, %{}}
-  defp ok_if_not_empty(m) when is_map(m), do: {:ok, m}
 
   defp merge_idls(
     accum = %Thrift.Parser.Models.Schema{},

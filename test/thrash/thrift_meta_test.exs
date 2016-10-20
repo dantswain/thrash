@@ -32,20 +32,21 @@ defmodule Thrash.ThriftMetaTest do
                  pastor: 127}
 
     got = Thrash.ThriftMeta.read_enum(idl, TacoType)
-    assert {:ok, expected} == got
+    assert expected == got
 
     got = Thrash.ThriftMeta.read_enum(idl, TACOTYPE)
-    assert {:ok, expected} == got
+    assert expected == got
 
     got = Thrash.ThriftMeta.read_enum(idl, ThrashFoo.TacoType)
-    assert {:ok, expected} == got
+    assert expected == got
   end
 
-  test "read_enum returns {:error, %{} if the enum is not found" do
+  test "read_enum raises an error if the enum is not found" do
     idl = Thrash.ThriftMeta.parse_idl(@idl_files)
 
-    assert {:error, %{}} == 
+    assert_raise ArgumentError, fn ->
       Thrash.ThriftMeta.read_enum(idl, BurritoType)
+    end
   end
 
   test "reading multiplie thrift IDL files" do

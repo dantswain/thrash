@@ -78,7 +78,32 @@ defmodule Thrash.ThriftMeta do
       end)
     end)
   end
-  defp translate_constant(%Thrift.Parser.Models.Constant{value: value}, _, _) do
+  defp translate_constant(
+    %Thrift.Parser.Models.Constant{
+      type: {:list, ref = %Thrift.Parser.Models.StructRef{}},
+      value: value
+    },
+    idl,
+    namespace
+  ) do
+    Enum.map(value, fn(v) ->
+      translate_constant(%Thrift.Parser.Models.Constant{type: ref, value: v}, idl, namespace)
+    end)
+  end
+  defp translate_constant(
+    %Thrift.Parser.Models.Constant{
+      type: {:map, {from_type, ref = %Thrift.Parser.Models.StructRef{}}},
+      value: value
+    },
+    idl,
+    namespace
+  ) do
+    Enum.map(value, fn({k, v}) ->
+      {k, translate_constant(%Thrift.Parser.Models.Constant{type: ref, value: v}, idl, namespace)}
+    end)
+    |> Enum.into(%{})
+  end
+  defp translate_constant(c = %Thrift.Parser.Models.Constant{value: value}, _, _) do
     value
   end
 

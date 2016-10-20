@@ -114,6 +114,12 @@ defmodule Thrash.MacroHelpers do
       m |> Enum.into([]) |> Enum.map(&ensure_quoted_value/1)
     }
   end
+  def ensure_quoted_value({k, v}) do
+    {ensure_quoted_value(k), ensure_quoted_value(v)}
+  end
+  def ensure_quoted_value(list) when is_list(list) do
+    Enum.map(list, &ensure_quoted_value/1)
+  end
   def ensure_quoted_value(m), do: m
 
   @doc """

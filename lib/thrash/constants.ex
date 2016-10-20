@@ -29,7 +29,7 @@ defmodule Thrash.Constants do
     |> ThriftMeta.read_constants(caller_namespace)
 
     Enum.map(constants, fn({k, v}) ->
-      defconst(k, MacroHelpers.ensure_quoted_value(v))
+      defconst(k, Macro.escape(v))
     end)
   end
 

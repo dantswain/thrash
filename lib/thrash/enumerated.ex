@@ -62,7 +62,7 @@ defmodule Thrash.Enumerated do
     # erlang code
     quoted_map = ThriftMeta.parse_idl
     |> ThriftMeta.read_enum(module)
-    |> MacroHelpers.ensure_quoted_value
+    |> Macro.escape
 
     map_keys = get_keys(quoted_map)
     map_values = get_values(quoted_map)

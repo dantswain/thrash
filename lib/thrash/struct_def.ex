@@ -30,12 +30,12 @@ defmodule Thrash.StructDef do
                          name :: atom,
                          default :: term}
 
-  alias Thrash.ThriftMeta
   alias Thrash.MacroHelpers
+  alias Thrash.IDL
 
   @spec find_in_thrift(atom, MacroHelpers.namespace) :: t
   def find_in_thrift(modulename, namespace) do
-    idl = Thrash.ThriftMeta.parse_idl
+    idl = IDL.parse
     modulename = Thrash.ThriftMeta.last_part_of_atom_as_atom(modulename)
     {:ok, struct_def} = read(idl, modulename, namespace)
     struct_def

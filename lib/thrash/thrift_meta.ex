@@ -4,24 +4,7 @@ defmodule Thrash.ThriftMeta do
   # Functions to access metadata from the Thrift-generated Erlang code
   # Thrash internal use only
 
-  alias Thrash.StructDef
-
   @type finder :: ((String.t) -> {:ok, term} | {:error, term})
-
-  def parse_idl do
-    parse_idl(Application.get_env(:thrash, :idl_files))
-  end
-
-  def parse_idl(junk) when junk == [] or is_nil(junk) do
-    raise ArgumentError, message: "No IDL files found."
-  end
-  def parse_idl(idl_files) do
-    idl_files
-    |> Enum.reduce(%Thrift.Parser.Models.Schema{}, fn(path, full_schema) ->
-      file_idl = Thrift.Parser.parse(File.read!(path))
-      merge_idls(full_schema, file_idl)
-    end)
-  end
 
   @doc """
   Determine namespace from constants header file name
@@ -92,7 +75,7 @@ defmodule Thrash.ThriftMeta do
   end
   defp translate_constant(
     %Thrift.Parser.Models.Constant{
-      type: {:map, {from_type, ref = %Thrift.Parser.Models.StructRef{}}},
+      type: {:map, {_from_type, ref = %Thrift.Parser.Models.StructRef{}}},
       value: value
     },
     idl,
@@ -103,7 +86,7 @@ defmodule Thrash.ThriftMeta do
     end)
     |> Enum.into(%{})
   end
-  defp translate_constant(c = %Thrift.Parser.Models.Constant{value: value}, _, _) do
+  defp translate_constant(%Thrift.Parser.Models.Constant{value: value}, _, _) do
     value
   end
 
@@ -173,36 +156,5 @@ defmodule Thrash.ThriftMeta do
     x
     |> last_part_of_atom_as_string
     |> String.to_atom
-  end
-
-  defp merge_idls(
-    accum = %Thrift.Parser.Models.Schema{},
-    el = %Thrift.Parser.Models.Schema{}) do
-    %{accum |
-      constants: merge_maps(accum.constants, el.constants),
-      enums: merge_maps(accum.enums, el.enums),
-      exceptions: merge_maps(accum.exceptions, el.exceptions),
-      includes: merge_includes(accum.includes, el.includes),
-      namespaces: merge_maps(accum.namespaces, el.namespaces),
-      services: merge_maps(accum.services, el.services),
-      structs: merge_maps(accum.structs, el.structs),
-      thrift_namespace: merge_namespaces(accum.thrift_namespace, el.thrift_namespace),
-      typedefs: merge_maps(accum.typedefs, el.typedefs),
-      unions: merge_maps(accum.unions, el.unions)
-    }
-  end
-
-  defp merge_maps(m1, m2) do
-    Map.merge(m1, m2)
-  end
-
-  defp merge_includes(i1, i2) do
-    i1 ++ i2
-  end
-
-  defp merge_namespaces(nil, nil), do: nil
-  defp merge_namespaces(s1, s2) do
-    IO.puts("NAMESPACES: #{inspect s1} #{inspect s2}")
-    s2
   end
 end

@@ -18,14 +18,14 @@ defmodule Thrash.Constants do
   `MyApp.Constants.magic_number/0`.
   """
 
+  alias Thrash.IDL
   alias Thrash.ThriftMeta
-  alias Thrash.MacroHelpers
 
   defmacro __using__(_opts \\ []) do
     caller = __CALLER__.module
     caller_namespace = Thrash.MacroHelpers.find_namespace(caller)
 
-    constants = ThriftMeta.parse_idl
+    constants = IDL.parse
     |> ThriftMeta.read_constants(caller_namespace)
 
     Enum.map(constants, fn({k, v}) ->

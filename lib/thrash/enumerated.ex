@@ -46,6 +46,7 @@ defmodule Thrash.Enumerated do
   """
 
   alias Thrash.ThriftMeta
+  alias Thrash.IDL
   alias Thrash.MacroHelpers
 
   # there is probably a more idiomatic way to do a lot of this..
@@ -60,7 +61,7 @@ defmodule Thrash.Enumerated do
     # if you get ":enum_not_found" here, it indicates that the enum
     # you were looking for does not exist in the thrift-generated
     # erlang code
-    quoted_map = ThriftMeta.parse_idl
+    quoted_map = IDL.parse
     |> ThriftMeta.read_enum(module)
     |> Macro.escape
 

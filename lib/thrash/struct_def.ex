@@ -65,6 +65,15 @@ defmodule Thrash.StructDef do
     end)
   end
 
+  @spec to_struct_template(t, Module.t) :: Map.t
+  def to_struct_template(fields, caller) do
+    Enum.map(fields, fn(field) ->
+      {field.name, nil}
+    end)
+    |> Enum.into(%{})
+    |> Map.put(:__struct__, caller)
+  end
+
   @spec override_defaults(t, Keyword.t) :: t
   def override_defaults(fields, overrides) do
     Enum.reduce(overrides, fields, fn({k, v}, fields) ->

@@ -73,6 +73,7 @@ defmodule Thrash.Protocol.Binary do
     |> StructDef.override_types(types)
 
     [generate_struct(modulename, types, defaults, caller_namespace)] ++
+    [generate_template(modulename, caller_namespace, caller)] ++
       [generate_serialize()] ++
       [generate_deserialize()] ++
       generate_field_serializers(thrift_def) ++
@@ -97,6 +98,16 @@ defmodule Thrash.Protocol.Binary do
     end
   end
 
+  defp generate_template(modulename, caller_namespace, caller) do
+    quote do
+      @struct_template unquote(modulename)
+      |> Thrash.StructDef.find_in_thrift(unquote(caller_namespace))
+      |> Thrash.StructDef.to_struct_template(unquote(caller))
+
+      def thrift_template, do: @struct_template
+    end
+  end
+
   defp generate_serialize() do
     quote do
       def serialize(val) do
@@ -114,7 +125,7 @@ defmodule Thrash.Protocol.Binary do
 
   defp generate_deserialize() do
     quote do
-      def deserialize(str, template \\ __struct__) do
+      def deserialize(str, template \\ thrift_template) do
         deserialize_field(str, template)
       end
     end
@@ -368,32 +379,6 @@ defmodule Thrash.Protocol.Binary do
     {Macro.var(val, __MODULE__), Macro.var(rest, __MODULE__)}
   end
 
-  defp empty_value?({:struct, struct_module}) do
-    quote do
-      value == nil || value == unquote(struct_module).__struct__
-    end
-  end
-  defp empty_value?({:map, _}) do
-    quote do
-      value == nil || value == %{}
-    end
-  end
-  defp empty_value?({:set, _}) do
-    quote do
-      value == nil || value == MapSet.new
-    end
-  end
-  defp empty_value?({:list, _}) do
-    quote do
-      value == nil || value == []
-    end
-  end
-  defp empty_value?(_) do
-    quote do
-      value == nil
-    end
-  end
-
   defp splice_binaries({:<<>>, _, p1}, {:<<>>, _, p2}) do
     {:<<>>, [], p1 ++ p2}
   end
@@ -410,7 +395,7 @@ defmodule Thrash.Protocol.Binary do
     quote do
       def serialize_field(unquote(ix), val, acc) do
         value = Map.get(val, unquote(fieldname))
-        if unquote(empty_value?(type)) do
+        if value == nil do
           serialize_field(unquote(ix) + 1, val, acc)
         else
           serialize_field(unquote(ix) + 1,

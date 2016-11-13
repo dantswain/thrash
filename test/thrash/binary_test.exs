@@ -57,7 +57,38 @@ defmodule Thrash.BinaryTest do
                   bigint: -9999999999999,
                   flag: true,
                   floatval: 3.14159265,
+                  list_of_structs: nil,
+                  map_int_to_string: nil,
+                  set_of_strings: nil,
+                  sub_struct: nil,
+                  map_string_to_struct: nil,
                   taco_pref: :carnitas}
+  end
+
+  def empty_vals_str do
+    hex = "0800010000002A0B0002000000086D79207468696E670F000308000000000A0004FFFFF6E7B18D60010C00050800010000004D0B00020000000C6120737562207374727563740002000601040007400921FB53C8D4F10800080000007C0F00090C0000000003000A0306000B80000D000C080B000000000D000D0B0C000000000E000E0B0000000000"
+    Base.decode16!(hex)
+  end
+
+  def empty_vals_struct do
+    sub_struct = %SubStruct{sub_id: 77, sub_name: "a sub struct"}
+    %SimpleStruct{
+      id: 42,
+      name: "my thing",
+      list_of_ints: [],
+      bigint: -9999999999999,
+      sub_struct: sub_struct,
+      flag: true,
+      floatval: 3.14159265,
+      taco_pref: :carnitas,
+      list_of_structs: [],
+      chew: 3,
+      mediumint: -32768,
+      map_int_to_string: %{},
+      map_string_to_struct: %{
+      },
+      set_of_strings: MapSet.new
+    }
   end
 
   test "defined struct has the correct defaults" do
@@ -83,5 +114,15 @@ defmodule Thrash.BinaryTest do
   test "serializes a struct with optional fields absent" do
     serialized = SimpleStruct.serialize(optionals_struct)
     assert(serialized == optionals_str)
+  end
+
+  test "serializes a struct with empty values" do
+    serialized = SimpleStruct.serialize(empty_vals_struct)
+    assert(serialized == empty_vals_str)
+  end
+
+  test "deserializes a struct with empty values" do
+    {deserialized, ""} = SimpleStruct.deserialize(empty_vals_str)
+    assert(deserialized == empty_vals_struct)
   end
 end

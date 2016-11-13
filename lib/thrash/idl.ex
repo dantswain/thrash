@@ -1,4 +1,7 @@
 defmodule Thrash.IDL do
+  alias Thrift.Parser
+  alias Thrift.Parser.Models
+  
   def parse do
     parse(Application.get_env(:thrash, :idl_files))
   end
@@ -8,15 +11,15 @@ defmodule Thrash.IDL do
   end
   def parse(idl_files) do
     idl_files
-    |> Enum.reduce(%Thrift.Parser.Models.Schema{}, fn(path, full_schema) ->
-      file_idl = Thrift.Parser.parse(File.read!(path))
+    |> Enum.reduce(%Models.Schema{}, fn(path, full_schema) ->
+      file_idl = Parser.parse(File.read!(path))
       merge(full_schema, file_idl)
     end)
   end
 
   def merge(
-    accum = %Thrift.Parser.Models.Schema{},
-    el = %Thrift.Parser.Models.Schema{}) do
+    accum = %Models.Schema{},
+    el = %Models.Schema{}) do
     %{accum |
       constants: merge_maps(accum.constants, el.constants),
       enums: merge_maps(accum.enums, el.enums),
@@ -25,10 +28,17 @@ defmodule Thrash.IDL do
       namespaces: merge_maps(accum.namespaces, el.namespaces),
       services: merge_maps(accum.services, el.services),
       structs: merge_maps(accum.structs, el.structs),
-      thrift_namespace: merge_namespaces(accum.thrift_namespace, el.thrift_namespace),
+      thrift_namespace: merge_namespaces(
+        accum.thrift_namespace,
+        el.thrift_namespace
+      ),
       typedefs: merge_maps(accum.typedefs, el.typedefs),
       unions: merge_maps(accum.unions, el.unions)
     }
+  end
+
+  def constants(idl = %Models.Schema{}) do
+    Map.get(idl, :constants)
   end
 
   defp merge_maps(m1, m2) do

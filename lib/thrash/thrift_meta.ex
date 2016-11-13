@@ -1,6 +1,8 @@
 defmodule Thrash.ThriftMeta do
   @moduledoc false
 
+  alias Thrash.IDL
+
   # Functions to access metadata from the Thrift-generated Erlang code
   # Thrash internal use only
 
@@ -25,7 +27,7 @@ defmodule Thrash.ThriftMeta do
   @spec read_constants(Thrift.Parser.Models.Schema.t, Module.t | nil) :: Keyword.t
   def read_constants(idl, namespace) do
     idl
-    |> Map.get(:constants)
+    |> IDL.constants
     |> thrashify_constants(idl, namespace)
     |> Enum.into(%{})
   end

@@ -27,7 +27,9 @@ defmodule Thrash.Mixfile do
     [{:quaff,
       github: "qhool/quaff",
       tag: "9a4ba378d470beac708e366dc9bacd5a9ef6f016",
-      override: true},
+      override: true,
+      only: [:dev, :test, :bench]
+     },
      {:earmark, "~> 0.1", only: :dev},
      {:ex_doc, "~> 0.11", only: :dev},
      {:dialyze, "~> 0.2", only: :dev},

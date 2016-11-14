@@ -15,6 +15,28 @@ Thrash requires Elixir v1.1 or newer to support Sets and Thrift 0.9.3
 or newer to support Maps (see below).  Therefore, it is recommended
 that you use Elixir >= 1.1 and Thrift >= 0.9.3.
 
+Note, when using Thrash you will need to add `quaff` as a dependency.
+In your mix.exs file:
+
+```
+defmodule MyProject.Mixfile do
+   #...
+   
+   defp deps do
+     [
+       # existing deps..
+       {:thrash, "~> 0.2"},
+       {
+         :quaff,
+         github: "qhool/quaff",
+         tag: "9a4ba378d470beac708e366dc9bacd5a9ef6f016",
+         override: true
+       }
+     ]
+   end
+end
+```
+
 ## Philosophy
 
 Thrash is an attempt to provide faster serialization/deserialization

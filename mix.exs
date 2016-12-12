@@ -3,7 +3,7 @@ defmodule Thrash.Mixfile do
 
   def project do
     [app: :thrash,
-     version: "0.3",
+     version: "0.3.0",
      description: description,
      package: package,
      elixir: "~> 1.1",

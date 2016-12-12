@@ -95,6 +95,7 @@ defmodule Thrash.Protocol.Binary do
                 |> Thrash.StructDef.override_types(unquote(types))
                 |> Thrash.StructDef.override_defaults(unquote(defaults))
                 |> Thrash.StructDef.to_defstruct)
+      @type t :: %__MODULE__{}
     end
   end
 

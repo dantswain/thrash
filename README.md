@@ -25,7 +25,7 @@ defmodule MyProject.Mixfile do
    defp deps do
      [
        # existing deps..
-       {:thrash, "~> 0.2"},
+       {:thrash, "~> 0.3"},
        {
          :quaff,
          github: "qhool/quaff",

@@ -161,7 +161,6 @@ defmodule Thrash.Enumerated do
   end
 
   def require_supported? do
-    [majors, minors, _] = String.split(System.version, ".")
-    String.to_integer(majors) >= 1 && String.to_integer(minors) >= 3
+    Version.match?(System.version, ">= 1.1.0")
   end
 end

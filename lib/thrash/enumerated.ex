@@ -66,8 +66,12 @@ defmodule Thrash.Enumerated do
     quoted_reversed_map = build_reverse(quoted_map)
     atoms_type = MacroHelpers.quoted_chained_or(map_keys)
     values_type = MacroHelpers.quoted_chained_or(map_values)
-    quoted_map_spec = to_map_spec(quoted_map)
-    quoted_reversed_map_spec = to_map_spec(quoted_reversed_map)
+    require_supported = require_supported?
+    quoted_map_spec = to_map_spec(quoted_map, require_supported)
+    quoted_reversed_map_spec = to_map_spec(
+      quoted_reversed_map,
+      require_supported
+    )
 
     quote do
       @typedoc "Valid atom values"
@@ -143,13 +147,21 @@ defmodule Thrash.Enumerated do
 
   # if we don't mark the keys as required, dialyzer will complain about
   # the type being a supertype with -Wunderspec enabled
-  defp to_map_spec({:%{}, line ,kv}) do
-    {:%{}, line, Enum.map(kv, &required_key/1)}
+  #   (Elixir 1.3+)
+  defp to_map_spec({:%{}, line ,kv}, true) do
+      {:%{}, line, Enum.map(kv, &required_key/1)}
   end
+  # In Elixir < 1.3, require was not supported so we just pass on the map
+  defp to_map_spec(quoted_map, false), do: quoted_map
 
   # turns %{k => v} into %{required(k) => v}, which is the Elixir equivalent of
   # #{k => v} (not required) vs #{k := v} (required)
   defp required_key({k, v}) do
     {{:required, [], [k]}, v}
+  end
+
+  def require_supported? do
+    [majors, minors, _] = String.split(System.version, ".")
+    String.to_integer(majors) >= 1 && String.to_integer(minors) >= 3
   end
 end

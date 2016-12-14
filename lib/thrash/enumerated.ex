@@ -161,6 +161,6 @@ defmodule Thrash.Enumerated do
   end
 
   def require_supported? do
-    Version.match?(System.version, ">= 1.1.0")
+    Version.match?(System.version, ">= 1.3.0")
   end
 end

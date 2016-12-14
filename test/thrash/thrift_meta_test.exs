@@ -30,8 +30,10 @@ defmodule Thrash.ThriftMetaTest do
                 THRASH_TEST_TACOTYPE_CARNITAS: 124,
                 THRASH_TEST_TACOTYPE_STEAK: 125,
                 THRASH_TEST_TACOTYPE_CHICKEN: 126,
-                THRASH_TEST_TACOTYPE_PASTOR: 127] |> Enum.into(HashSet.new)
-    got = Thrash.ThriftMeta.read_constants(header) |> Enum.into(HashSet.new)
+                THRASH_TEST_TACOTYPE_PASTOR: 127,
+                THRASH_TEST_PROPERNAMESFORCOLDFIZZYDRINKS_SODA: 1
+               ] |> Enum.into(MapSet.new)
+    got = Thrash.ThriftMeta.read_constants(header) |> Enum.into(MapSet.new)
 
     assert Set.equal?(expected, got), "#{inspect expected} was not eq #{inspect got}"
   end

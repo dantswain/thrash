@@ -2,6 +2,10 @@ namespace erl thrash
 
 const i32 MAX_THINGS = 42
 
+enum ProperNamesForColdFizzyDrinks {
+  SODA = 1
+}
+
 enum TacoType {
   BARBACOA = 123,
   CARNITAS = 124,

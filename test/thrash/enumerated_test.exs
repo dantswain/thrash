@@ -41,4 +41,8 @@ defmodule Thrash.EnumeratedTest do
     types = Kernel.Typespec.beam_types(TacoType)
     assert Enum.member?(types, {:type, type})
   end
+
+  test "handles an enum with only one value" do
+    assert Map.values(ProperNamesForColdFizzyDrinks.map) == [1]
+  end
 end

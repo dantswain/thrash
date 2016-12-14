@@ -2,6 +2,10 @@ defmodule TacoType do
   use Thrash.Enumerated
 end
 
+defmodule ProperNamesForColdFizzyDrinks do
+  use Thrash.Enumerated
+end
+
 defmodule TacoFlavor do
   use Thrash.Enumerated, source: TacoType
 end

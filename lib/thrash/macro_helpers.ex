@@ -81,6 +81,7 @@ defmodule Thrash.MacroHelpers do
       iex> Thrash.MacroHelpers.quoted_chained_or([:a, :b, :c])
       quote do: :a | :b | :c
   """
+  def quoted_chained_or([value]), do: value
   def quoted_chained_or(values) when is_list(values) and length(values) > 1 do
     values = Enum.reverse(values)
     [a, b | rest] = values

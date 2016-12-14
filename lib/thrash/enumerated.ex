@@ -141,10 +141,14 @@ defmodule Thrash.Enumerated do
     Keyword.values(kv)
   end
 
+  # if we don't mark the keys as required, dialyzer will complain about
+  # the type being a supertype with -Wunderspec enabled
   defp to_map_spec({:%{}, line ,kv}) do
     {:%{}, line, Enum.map(kv, &required_key/1)}
   end
 
+  # turns %{k => v} into %{required(k) => v}, which is the Elixir equivalent of
+  # #{k => v} (not required) vs #{k := v} (required)
   defp required_key({k, v}) do
     {{:required, [], [k]}, v}
   end

@@ -63,9 +63,11 @@ defmodule Thrash.Enumerated do
     quoted_map = module |> find_in_thrift |> ensure_quoted
     map_keys = get_keys(quoted_map)
     map_values = get_values(quoted_map)
-    reversed = build_reverse(quoted_map)
+    quoted_reversed_map = build_reverse(quoted_map)
     atoms_type = MacroHelpers.quoted_chained_or(map_keys)
     values_type = MacroHelpers.quoted_chained_or(map_values)
+    quoted_map_spec = to_map_spec(quoted_map)
+    quoted_reversed_map_spec = to_map_spec(quoted_reversed_map)
 
     quote do
       @typedoc "Valid atom values"
@@ -77,25 +79,25 @@ defmodule Thrash.Enumerated do
       @doc """
       Returns the map from valid atom values to integer values
       """
-      @spec map() :: map
+      @spec map() :: unquote(quoted_map_spec)
       def map(), do: unquote(quoted_map)
 
       @doc """
       Returns the reverse map from valid integer values to atom values
       """
-      @spec reverse_map() :: map
-      def reverse_map(), do: unquote(reversed)
+      @spec reverse_map() :: unquote(quoted_reversed_map_spec)
+      def reverse_map(), do: unquote(quoted_reversed_map)
 
       @doc """
       Returns the list of valid atom values
       """
-      @spec atoms() :: [atom]
+      @spec atoms() :: nonempty_list(unquote(atoms_type))
       def atoms(), do: unquote(map_keys)
 
       @doc """
       Returns the list of valid integer values
       """
-      @spec values() :: [integer]
+      @spec values() :: nonempty_list(unquote(values_type))
       def values(), do: unquote(map_values)
 
       @doc """
@@ -108,7 +110,7 @@ defmodule Thrash.Enumerated do
       Returns the atom corresponding to the given integer value
       """
       @spec atom(value_t) :: atom_t
-      def atom(for_id), do: unquote(reversed)[for_id]
+      def atom(for_id), do: unquote(quoted_reversed_map)[for_id]
     end
   end
 
@@ -137,5 +139,13 @@ defmodule Thrash.Enumerated do
 
   defp get_values({:%{}, _line, kv}) do
     Keyword.values(kv)
+  end
+
+  defp to_map_spec({:%{}, line ,kv}) do
+    {:%{}, line, Enum.map(kv, &required_key/1)}
+  end
+
+  defp required_key({k, v}) do
+    {{:required, [], [k]}, v}
   end
 end

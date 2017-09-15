@@ -141,7 +141,7 @@ defmodule Thrash.Protocol.Binary do
 
   defp header(type, ix) do
     quote do
-      << unquote(Type.id(type)), unquote(ix) + 1 :: 16-unsigned >>
+      << unquote(Type.id(type)), unquote(ix + 1) :: 16-unsigned >>
     end
   end
 
